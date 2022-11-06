@@ -108,7 +108,6 @@ p {
 }
 .btn:hover {
   color: var(--clr-primary);
-  background: var(--clr-primary-light);
 }
 
 /*
@@ -298,4 +297,9 @@ hr {
 
 .game-field td.miss_shot {
   background-color: green !important;
+}
+
+.manipulate_section {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
 }

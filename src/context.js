@@ -1,14 +1,27 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { field } from './data'
 
 const AppContext = React.createContext()
 
-const initialState = {
-    ...field
-}
+const localStorageName = 'seaBattle';
+
+const defaultState = {...field};
+
+const geStateFromLocalStorage = () => {
+    const seaBattleState = localStorage.getItem(localStorageName);
+    if (seaBattleState) {
+      return JSON.parse(seaBattleState);
+    } else {
+      return defaultState;
+    }
+  };
 
 const AppProvider = ({ children }) => {
-    const [state, setState] = useState(initialState);
+    const [state, setState] = useState(geStateFromLocalStorage());
+
+    useEffect(() => {
+        localStorage.setItem(localStorageName, JSON.stringify(state))
+    }, [state]);
 
     const openCell = (x, y) => {
         const { width, height, table } = state;
@@ -35,8 +48,12 @@ const AppProvider = ({ children }) => {
         setState({ ...state, table: newTable })
     }
 
+    const resetState = () => {
+        setState(defaultState);
+    }
+
     return (
-        <AppContext.Provider value={{ state, openCell }} >
+        <AppContext.Provider value={{ state, openCell, resetState }} >
             {children}
         </AppContext.Provider>
     )
