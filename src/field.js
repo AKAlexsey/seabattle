@@ -2,10 +2,9 @@ import React from 'react'
 
 import { useGlobalContext } from './context'
 
-const Field = () => {
-    const { state, openCell } = useGlobalContext()
+const Field = (params) => {
+    const { state, openCell } = params;
     const { table } = state;
-
     const getCellClass = ({ opened, contains }) => {
         if (opened === false) {
             return 'closed';
@@ -21,7 +20,7 @@ const Field = () => {
                         return (<tr key={y}>
                             {row.map((cell, x) => {
                                 return (
-                                <td key={x} className={getCellClass(cell)} onClick={() => openCell(x, y)}></td>
+                                  <td key={x} className={getCellClass(cell)} onClick={() => openCell(x, y)}></td>
                                 )
                             })}
                         </tr>);
