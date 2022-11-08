@@ -3,9 +3,10 @@
 const EMPTY_CONTAINS = 'empty'
 const MISS_SHOT_CONTAINS = 'miss_shot'
 const SHIP_CONTAINS = 'ship'
+const DEAD_SHIP_CONTAINS = 'dead_ship'
 
-const generateField = (height, width) => {
-    const emptyField = {opened: false, contains: EMPTY_CONTAINS, shipId: null};
+const createField = (height, width) => {
+    const emptyField = { opened: false, contains: EMPTY_CONTAINS, shipId: null };
     const generatedTable = Array(height).fill().map(() => Array(width).fill(emptyField));
     return {
         height: height,
@@ -17,27 +18,40 @@ const generateField = (height, width) => {
 const addShip = (table, x, y, shipId) => {
     return iterateTable(table, (cell, tableX, tableY) => {
         if (tableX === x && tableY === y) {
-            return { ...cell, shipId: shipId, contains: SHIP_CONTAINS}
+            return { ...cell, shipId: shipId, contains: SHIP_CONTAINS }
         } else {
             return cell
         }
     })
 }
 
-const openTable = (table) => {
+const openAllTable = (table) => {
     return iterateTable(table, (cell, tableX, tableY) => {
-        return { ...cell, opened: true}
+        return { ...cell, opened: true }
     })
 }
 
 const iterateTable = (table, iterator) => {
-    table.map((row, tableY) => {
-        row.map((cell, tableX) => {
-            iterator(cell, tableX, tableY)
+    return table.map((row, tableY) => {
+        return row.map((cell, tableX) => {
+            return iterator(cell, tableX, tableY)
         })
+    })
+}
+
+const shootTable = (table, x, y) => {
+    return iterateTable(table, (cell, tableX, tableY) => {
+        if (tableX === x && tableY === y) {
+            // Need to send shipId to some observer to display is ship still alive.
+            const { contains } = cell;
+            const newContains = contains === SHIP_CONTAINS ? DEAD_SHIP_CONTAINS : MISS_SHOT_CONTAINS;
+            return { ...cell, contains: newContains };
+        } else {
+            return cell;
+        }
     })
 }
 
 
 
-export { generateField, addShip, openTable }
+export { addShip, createField, openAllTable, shootTable }

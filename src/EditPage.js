@@ -1,12 +1,19 @@
 import './Battlefield.css';
 import Field from './field';
-
+import React, { useState, useEffect  } from 'react'
 import { useGlobalContext } from './context'
-
 import { Link } from "react-router-dom";
+import { openAllTable }  from "./FieldManipulationContext"
+
+const localStorageName = 'seaBattle';
+
 
 function EditPage() {
-  const { state, openCell, resetState } = useGlobalContext()
+  const { state, generateField, addShipOnTable } = useGlobalContext()
+
+  useEffect(() => {
+    localStorage.setItem(localStorageName, JSON.stringify(state))
+}, [state]);
 
   return (
     <div className="App">
@@ -16,11 +23,11 @@ function EditPage() {
       </header>
 
       <div className="bobard">
-        <Field state={state} openCell={openCell}/>
+        <Field state={state} pushTileCallback={addShipOnTable} />
       </div>
 
       <div className='manipulate_section'>
-        <button className='btn remove-btn' onClick={resetState}>Reset field</button>
+        <button className='btn remove-btn' onClick={generateField}>Generate Field</button>
       </div>
 
       <div className='manipulate_section'>

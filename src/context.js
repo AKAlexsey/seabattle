@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { field } from './data'
+import { addShip, createField, shootTable }  from "./FieldManipulationContext"
 
 const AppContext = React.createContext()
 
@@ -52,8 +53,28 @@ const AppProvider = ({ children }) => {
         setState(defaultState);
     }
 
+
+    const generateField = () => {
+        const newField = createField(10, 10);
+        setState(newField);
+    }
+
+    const addShipOnTable = (x, y) => {
+        const { table } = state;
+        const updatedTable = addShip(table, x, y , `randomId_234`)
+
+        setState({ ...state, table: updatedTable })
+    }
+
+    const shootTableCell = (x, y) => {
+        const { table } = state;
+        const updatedTable = shootTable(table, x, y)
+        setState({ ...state, table: updatedTable })
+    }
+
+
     return (
-        <AppContext.Provider value={{ state, openCell, resetState }} >
+        <AppContext.Provider value={{ state, openCell, resetState, generateField, addShipOnTable, shootTableCell }} >
             {children}
         </AppContext.Provider>
     )

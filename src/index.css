@@ -292,6 +292,10 @@ hr {
 }
 
 .game-field td.ship {
+  background-color: green !important;
+}
+
+.game-field td.dead_ship {
   background-color: red !important;
 }
 

@@ -86,12 +86,6 @@ export const field = {
     ]
 }
 
-const cell = {
-    opened: false,
-    contains: 'empty',
-    shipId: null
-}
-
 const availableContainas = ['empty', 'miss_shot', 'ship']
 
 export default { field }

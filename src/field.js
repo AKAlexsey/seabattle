@@ -3,7 +3,7 @@ import React from 'react'
 import { useGlobalContext } from './context'
 
 const Field = (params) => {
-    const { state, openCell } = params;
+    const { state, pushTileCallback } = params;
     const { table } = state;
     const getCellClass = ({ opened, contains }) => {
         if (opened === false) {
@@ -19,8 +19,9 @@ const Field = (params) => {
                     table.map((row, y) => {
                         return (<tr key={y}>
                             {row.map((cell, x) => {
+                                const { contains } = cell;
                                 return (
-                                  <td key={x} className={getCellClass(cell)} onClick={() => openCell(x, y)}></td>
+                                    <td key={x} className={contains} onClick={() => pushTileCallback(x, y)}></td>
                                 )
                             })}
                         </tr>);
