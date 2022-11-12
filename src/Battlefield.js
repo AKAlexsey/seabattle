@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 
 function Battlefield() {
-  const { state, resetState, shootTableCell } = useGlobalContext()
+  const { state, shootTableCell } = useGlobalContext()
 
   return (
     <div className="App">
@@ -18,10 +18,6 @@ function Battlefield() {
 
       <div className="bobard">
         <Field state={state} pushTileCallback={shootTableCell}/>
-      </div>
-
-      <div className='manipulate_section'>
-        <button className='btn remove-btn' onClick={resetState}>Reset field</button>
       </div>
 
       <div className='manipulate_section'>

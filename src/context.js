@@ -1,19 +1,22 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { field } from './data'
-import { addShip, createField, shootTable }  from "./FieldManipulationContext"
+import { addShip, createField, shootTable, makeDefaultField, DEFAULT_WIDTH, DEFAULT_HEIGHT,  }  from "./FieldManipulationContext"
 
 const AppContext = React.createContext()
 
 const localStorageName = 'seaBattle';
 
-const defaultState = {...field};
+const makeDefaultState = () => {
+    const defaultField = makeDefaultField();
+
+    return { ...defaultField };
+}
 
 const geStateFromLocalStorage = () => {
     const seaBattleState = localStorage.getItem(localStorageName);
     if (seaBattleState) {
       return JSON.parse(seaBattleState);
     } else {
-      return defaultState;
+      return makeDefaultState();
     }
   };
 
@@ -49,14 +52,12 @@ const AppProvider = ({ children }) => {
         setState({ ...state, table: newTable })
     }
 
-    const resetState = () => {
-        setState(defaultState);
-    }
+    const generateField = (width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT) => {
+        console.log({ width, height })
+        const newField = createField(width, height);
+        console.log({ newField })
 
-
-    const generateField = () => {
-        const newField = createField(10, 10);
-        setState(newField);
+        setState({ ...state, ...newField });
     }
 
     const addShipOnTable = (x, y) => {
@@ -74,7 +75,7 @@ const AppProvider = ({ children }) => {
 
 
     return (
-        <AppContext.Provider value={{ state, openCell, resetState, generateField, addShipOnTable, shootTableCell }} >
+        <AppContext.Provider value={{ state, openCell, generateField, addShipOnTable, shootTableCell }} >
             {children}
         </AppContext.Provider>
     )

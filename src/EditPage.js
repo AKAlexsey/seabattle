@@ -27,7 +27,7 @@ function EditPage() {
       </div>
 
       <div className='manipulate_section'>
-        <button className='btn remove-btn' onClick={generateField}>Generate Field</button>
+        <button className='btn remove-btn' onClick={() => { generateField() }}>Generate Field</button>
       </div>
 
       <div className='manipulate_section'>

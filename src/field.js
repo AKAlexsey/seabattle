@@ -21,7 +21,15 @@ const Field = (params) => {
                             {row.map((cell, x) => {
                                 const { contains } = cell;
                                 return (
-                                    <td key={x} className={contains} onClick={() => pushTileCallback(x, y)}></td>
+                                    <td 
+                                        key={x} 
+                                        className={contains} 
+                                        onClick={() => pushTileCallback(x, y)}
+                                        onMouseEnter={() => { console.log(`Hovered ${x} ${y}`) }}
+                                        onMouseLeave={() => { console.log(`Leaved ${x} ${y}`) }}
+                                        >
+
+                                    </td>
                                 )
                             })}
                         </tr>);

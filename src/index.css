@@ -300,7 +300,7 @@ hr {
 }
 
 .game-field td.miss_shot {
-  background-color: green !important;
+  background-color: pink !important;
 }
 
 .manipulate_section {
