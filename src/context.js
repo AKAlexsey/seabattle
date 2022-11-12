@@ -1,18 +1,20 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { addShip, createField, shootTable, makeDefaultField, DEFAULT_WIDTH, DEFAULT_HEIGHT,  }  from "./FieldManipulationContext"
+import { addShip, createField, shootTable, makeDefaultField, DEFAULT_WIDTH, DEFAULT_HEIGHT,  }  from "./fieldManipulationContext"
+import { makeDefaultMenuState, setMenuOpened, setStationary, setMenuPosition  }  from "./editTileMenu"
 
 const AppContext = React.createContext()
 
-const localStorageName = 'seaBattle';
+const LOCAL_STORAGE_NAME = 'seaBattle';
 
 const makeDefaultState = () => {
     const defaultField = makeDefaultField();
+    const defaultMenuState = makeDefaultMenuState();
 
-    return { ...defaultField };
+    return { ...defaultField, ...defaultMenuState };
 }
 
 const geStateFromLocalStorage = () => {
-    const seaBattleState = localStorage.getItem(localStorageName);
+    const seaBattleState = localStorage.getItem(LOCAL_STORAGE_NAME);
     if (seaBattleState) {
       return JSON.parse(seaBattleState);
     } else {
@@ -24,10 +26,10 @@ const AppProvider = ({ children }) => {
     const [state, setState] = useState(geStateFromLocalStorage());
 
     useEffect(() => {
-        localStorage.setItem(localStorageName, JSON.stringify(state))
+        localStorage.setItem(LOCAL_STORAGE_NAME, JSON.stringify(state))
     }, [state]);
 
-    const openCell = (x, y) => {
+    const openTile = (x, y) => {
         const { width, height, table } = state;
 
         if (x < 0 || x >= width) {
@@ -40,10 +42,10 @@ const AppProvider = ({ children }) => {
             return null;
         }
 
-        const newTable = table.map((row, cellY) => {
-            if (cellY === y) {
-                return row.map((cell, cellX) => {
-                    return (cellX === x) ? { ...cell, opened: true } : cell
+        const newTable = table.map((row, tileY) => {
+            if (tileY === y) {
+                return row.map((tile, tileX) => {
+                    return (tileX === x) ? { ...tile, opened: true } : tile
                 })
             } else {
                 return row;
@@ -53,9 +55,7 @@ const AppProvider = ({ children }) => {
     }
 
     const generateField = (width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT) => {
-        console.log({ width, height })
         const newField = createField(width, height);
-        console.log({ newField })
 
         setState({ ...state, ...newField });
     }
@@ -67,22 +67,41 @@ const AppProvider = ({ children }) => {
         setState({ ...state, table: updatedTable })
     }
 
-    const shootTableCell = (x, y) => {
+    const shootTableTile = (x, y) => {
         const { table } = state;
         const updatedTable = shootTable(table, x, y)
         setState({ ...state, table: updatedTable })
     }
 
+    const setMenuElementOpened = (opened) => {
+        const updatedMenuOpenedState = setMenuOpened(opened, state);
+        console.log({ opened, updatedMenuOpenedState })
+        setState(updatedMenuOpenedState)
+    }
+ 
+    const setMenuElementPosition = (x, y) => {
+        const updatedMenuPositionState = setMenuPosition(x, y, state);
+        setState(updatedMenuPositionState)
+    }
+
 
     return (
-        <AppContext.Provider value={{ state, openCell, generateField, addShipOnTable, shootTableCell }} >
+        <AppContext.Provider value={{ 
+            state, 
+            openTile, 
+            generateField, 
+            addShipOnTable, 
+            shootTableTile, 
+            setMenuElementOpened, 
+            setMenuElementPosition 
+        }} >
             {children}
         </AppContext.Provider>
     )
 }
 
-export const useGlobalContext = () => {
+const useGlobalContext = () => {
     return useContext(AppContext)
 }
 
-export { AppContext, AppProvider }
+export { AppContext, AppProvider, useGlobalContext }

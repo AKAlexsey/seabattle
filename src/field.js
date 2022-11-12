@@ -1,16 +1,10 @@
-import React from 'react'
+import { hover } from '@testing-library/user-event/dist/hover';
 
 import { useGlobalContext } from './context'
 
 const Field = (params) => {
-    const { state, pushTileCallback } = params;
+    const { state, pushTileCallback, hoverTileCallback, unhoverTileCallback } = params;
     const { table } = state;
-    const getCellClass = ({ opened, contains }) => {
-        if (opened === false) {
-            return 'closed';
-        }
-        return contains;
-    }
 
     return (<div>
         <table className='game-field'>
@@ -25,8 +19,8 @@ const Field = (params) => {
                                         key={x} 
                                         className={contains} 
                                         onClick={() => pushTileCallback(x, y)}
-                                        onMouseEnter={() => { console.log(`Hovered ${x} ${y}`) }}
-                                        onMouseLeave={() => { console.log(`Leaved ${x} ${y}`) }}
+                                        onMouseEnter={(e) => { hoverTileCallback(e) }}
+                                        onMouseLeave={(e) => { unhoverTileCallback(e) }}
                                         >
 
                                     </td>

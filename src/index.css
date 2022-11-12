@@ -307,3 +307,20 @@ hr {
   margin-top: 2rem;
   margin-bottom: 1rem;
 }
+
+.menu_element_container {
+  display: none;
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  z-index: 3;
+  padding: 2rem;
+  border-radius: var(--radius);
+  transition: var(--transition);
+  transform: translateX(0%) translateY(0%);
+  background-color: white;
+}
+
+.menu_element_container.opened {
+  display: block;
+}

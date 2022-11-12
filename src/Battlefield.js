@@ -1,5 +1,5 @@
 import './Battlefield.css';
-import Field from './field';
+import Field from './Field';
 
 import { useGlobalContext } from './context'
 
@@ -7,7 +7,10 @@ import { Link } from "react-router-dom";
 
 
 function Battlefield() {
-  const { state, shootTableCell } = useGlobalContext()
+  const { state, shootTableTile } = useGlobalContext()
+
+  const hoverTileCallback = () => { console.log('Battlefield ') };
+  const unhoverTileCallback = () => { console.log('Battlefield ') };
 
   return (
     <div className="App">
@@ -17,7 +20,12 @@ function Battlefield() {
       </header>
 
       <div className="bobard">
-        <Field state={state} pushTileCallback={shootTableCell}/>
+        <Field 
+          state={state}
+          pushTileCallback={shootTableTile}
+          hoverTileCallback={hoverTileCallback}
+          unhoverTileCallback={unhoverTileCallback}
+        />
       </div>
 
       <div className='manipulate_section'>
