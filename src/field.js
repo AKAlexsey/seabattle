@@ -1,14 +1,10 @@
-import { hover } from '@testing-library/user-event/dist/hover';
-
-import { useGlobalContext } from './context'
-
 const Field = (params) => {
     const { state, pushTileCallback, hoverTileCallback, unhoverTileCallback } = params;
     const { table } = state;
 
     return (<div>
         <table className='game-field'>
-            <tbody>
+            <tbody onMouseLeave={unhoverTileCallback}>
                 {
                     table.map((row, y) => {
                         return (<tr key={y}>
@@ -20,7 +16,6 @@ const Field = (params) => {
                                         className={contains} 
                                         onClick={() => pushTileCallback(x, y)}
                                         onMouseEnter={(e) => { hoverTileCallback(e) }}
-                                        onMouseLeave={(e) => { unhoverTileCallback(e) }}
                                         >
 
                                     </td>

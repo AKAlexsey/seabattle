@@ -1,26 +1,28 @@
-const makeMenuState = ({ opened = false, stationary = false, positionX = 0 , positionY = 0}) => {
+const makeMenuState = ({ opened = false, positionX = 0, positionY = 0 }) => {
     return {
         opened,
-        stationary,
         positionX,
         positionY,
     };
 }
 
 const makeDefaultMenuState = () => {
-    return makeMenuState({ opened: true });
+    return makeMenuState({ opened: false });
 }
 
-const setMenuOpened = (opened, state) => {
-    return { ...state, opened };
+const openTileMenu = (positionX, positionY, state) => {
+    return {
+        ...state,
+        positionX,
+        positionY, opened: true
+    };
 }
 
-const setStationary = (stationary, state) => {
-    return { ...state, stationary };
+const closeTileMenu = (state) => {
+    return {
+        ...state,
+        opened: false
+    };
 }
 
-const setMenuPosition = (positionX, positionY, state) => {
-    return { ...state, positionX, positionY };
-}
-
-export { makeDefaultMenuState, makeMenuState, setMenuOpened, setStationary, setMenuPosition }
+export { makeDefaultMenuState, makeMenuState, openTileMenu, closeTileMenu }

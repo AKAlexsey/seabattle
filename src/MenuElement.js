@@ -8,11 +8,9 @@ const MenuElement = ({ children }) => {
     // // TODO refactor state. separate for different elements. To avoid constant re-render
     useEffect(() => {
         const menu = container.current
-        console.log(menu);
 
         menu.style.left = `${positionX}px`
         menu.style.top = `${positionY}px`
-        console.log({opened, positionX, positionY})
     }, [opened, positionX, positionY])
 
     return (

@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { addShip, createField, shootTable, makeDefaultField, DEFAULT_WIDTH, DEFAULT_HEIGHT,  }  from "./fieldManipulationContext"
-import { makeDefaultMenuState, setMenuOpened, setStationary, setMenuPosition  }  from "./editTileMenu"
+import { makeDefaultMenuState, openTileMenu, closeTileMenu }  from "./editTileMenu"
 
 const AppContext = React.createContext()
 
@@ -73,15 +73,14 @@ const AppProvider = ({ children }) => {
         setState({ ...state, table: updatedTable })
     }
 
-    const setMenuElementOpened = (opened) => {
-        const updatedMenuOpenedState = setMenuOpened(opened, state);
-        console.log({ opened, updatedMenuOpenedState })
-        setState(updatedMenuOpenedState)
+    const openTileMenuElement = (positionX, positionY) => {
+        const stateWithOpenedTileMenu = openTileMenu(positionX, positionY, state);
+        setState(stateWithOpenedTileMenu);
     }
  
-    const setMenuElementPosition = (x, y) => {
-        const updatedMenuPositionState = setMenuPosition(x, y, state);
-        setState(updatedMenuPositionState)
+    const closeTileMenuElement = () => {
+        const stateWithClosedMenu = closeTileMenu(state);
+        setState(stateWithClosedMenu);
     }
 
 
@@ -92,8 +91,8 @@ const AppProvider = ({ children }) => {
             generateField, 
             addShipOnTable, 
             shootTableTile, 
-            setMenuElementOpened, 
-            setMenuElementPosition 
+            openTileMenuElement, 
+            closeTileMenuElement 
         }} >
             {children}
         </AppContext.Provider>
