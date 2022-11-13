@@ -296,12 +296,22 @@ hr {
   background-color: green !important;
 }
 
+.game-field td.ship.blocked {
+  background-color: pink !important;
+}
+
 .game-field td.dead_ship {
-  background-color: red !important;
+  background-image: url('https://image.pngaaa.com/437/5368437-middle.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .game-field td.miss_shot {
-  background-color: pink !important;
+  background-image: url('https://charbase.com/images/glyph/183');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .manipulate_section {

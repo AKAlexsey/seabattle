@@ -57,4 +57,25 @@ const shootTable = (table, x, y) => {
     })
 }
 
+const shipCellCoordinates = {
+    x: 1,
+    y: 1,
+    alive: [true, false]
+}
+
+const ship = {
+    size: [1,4],
+    id: "Id_1",
+    occupied_cells: [shipCellCoordinates, shipCellCoordinates],
+    positionX: [0-10],
+    positionY: [0-10],
+    direction: ['top','right','down','left'],
+    alive: [true, false]
+}
+
+const shipsCollection = [
+    ship,
+    ship
+]
+
 export { addShip, makeDefaultField, createField, DEFAULT_WIDTH, DEFAULT_HEIGHT, openAllTable, shootTable }
