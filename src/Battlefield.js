@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 
 function Battlefield() {
-  const { state, shootTableTile } = useGlobalContext()
+  const { state, shootTableTile, openTable } = useGlobalContext()
 
   const mouseEnterTileCallback = () => { console.log('Battlefield enter event') };
   const mouseLeaveTileCallback = () => { console.log('Battlefield leave field event') };
@@ -25,6 +25,7 @@ function Battlefield() {
           pushTileCallback={shootTableTile}
           mouseEnterTileCallback={mouseEnterTileCallback}
           mouseLeaveTileCallback={mouseLeaveTileCallback}
+          tableFiltrationFunction={openTable}
         />
       </div>
 

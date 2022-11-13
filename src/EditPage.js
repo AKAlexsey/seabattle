@@ -8,7 +8,7 @@ const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 
 function EditPage() {
   const { state, generateField, addShipOnTable, 
-    closeTileMenuElement, moveTileMenuElement } = useGlobalContext()
+    closeTileMenuElement, moveTileMenuElement, hoverShipOnTable } = useGlobalContext()
 
   const mouseMoveTileCallback = (e) => {
     const positionX = e.pageX + MENU_ELEMENT_MOUSE_DISTANCE;

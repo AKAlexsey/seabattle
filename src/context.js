@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { addShip, createField, shootTable, makeDefaultField, DEFAULT_WIDTH, DEFAULT_HEIGHT,  }  from "./fieldManipulationContext"
+import { addShip, hoverShip, createField, shootTable, makeDefaultField, DIRECTION_UP, DEFAULT_WIDTH, DEFAULT_HEIGHT, openAllTable }  from "./fieldManipulationContext"
 import { makeDefaultMenuState, closeTileMenu, changeTileMenuPosition }  from "./editTileMenu"
 
 const AppContext = React.createContext()
@@ -81,6 +81,28 @@ const AppProvider = ({ children }) => {
     const moveTileMenuElement = (x, y) => {
         const updatedTileMenuParams = changeTileMenuPosition(x, y)
         setState({ ...state, ...updatedTileMenuParams });
+    }
+
+    const openTable = (state) => {
+        const { table } = state;
+        const openedTable = openAllTable(table)
+        return { ...state, table: openedTable };
+    }
+
+    const hoverShipOnTable = (state, hoveredShipX, hoveredShipY, direction = DIRECTION_UP) => {
+        const { table } = state;
+        const ship = {
+            size: 3,
+            id: "Id_1",
+            occupied_cells: [],
+            positionX: hoveredShipX,
+            positionY: hoveredShipY,
+            direction: direction,
+            alive: null
+        }
+
+        const tableWithHoveredShip = hoverShip(table, ship);
+        return { ...state, table: tableWithHoveredShip };
     }
 
 

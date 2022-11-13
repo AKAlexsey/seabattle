@@ -1,12 +1,14 @@
 const Field = (params) => {
-    const { state, pushTileCallback, mouseEnterTileCallback, mouseMoveTileCallback, mouseLeaveFieldCallback } = params;
+    const { state, pushTileCallback, mouseEnterTileCallback, mouseMoveTileCallback, mouseLeaveFieldCallback, tableFiltrationFunction } = params;
     const { table } = state;
+
+    const filteredTable = tableFiltrationFunction(table);
 
     return (<div>
         <table className='game-field'>
             <tbody onMouseLeave={mouseLeaveFieldCallback}>
                 {
-                    table.map((row, y) => {
+                    filteredTable.map((row, y) => {
                         return (<tr key={y}>
                             {row.map((cell, x) => {
                                 const { contains } = cell;
