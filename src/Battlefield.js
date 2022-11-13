@@ -9,8 +9,8 @@ import { Link } from "react-router-dom";
 function Battlefield() {
   const { state, shootTableTile } = useGlobalContext()
 
-  const hoverTileCallback = () => { console.log('Battlefield ') };
-  const unhoverTileCallback = () => { console.log('Battlefield ') };
+  const mouseEnterTileCallback = () => { console.log('Battlefield enter event') };
+  const mouseLeaveTileCallback = () => { console.log('Battlefield leave field event') };
 
   return (
     <div className="App">
@@ -23,8 +23,8 @@ function Battlefield() {
         <Field 
           state={state}
           pushTileCallback={shootTableTile}
-          hoverTileCallback={hoverTileCallback}
-          unhoverTileCallback={unhoverTileCallback}
+          mouseEnterTileCallback={mouseEnterTileCallback}
+          mouseLeaveTileCallback={mouseLeaveTileCallback}
         />
       </div>
 

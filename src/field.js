@@ -1,22 +1,23 @@
 const Field = (params) => {
-    const { state, pushTileCallback, hoverTileCallback, unhoverTileCallback } = params;
+    const { state, pushTileCallback, mouseEnterTileCallback, mouseMoveTileCallback, mouseLeaveFieldCallback } = params;
     const { table } = state;
 
     return (<div>
         <table className='game-field'>
-            <tbody onMouseLeave={unhoverTileCallback}>
+            <tbody onMouseLeave={mouseLeaveFieldCallback}>
                 {
                     table.map((row, y) => {
                         return (<tr key={y}>
                             {row.map((cell, x) => {
                                 const { contains } = cell;
                                 return (
-                                    <td 
-                                        key={x} 
-                                        className={contains} 
+                                    <td
+                                        key={x}
+                                        className={contains}
                                         onClick={() => pushTileCallback(x, y)}
-                                        onMouseEnter={(e) => { hoverTileCallback(e) }}
-                                        >
+                                        onMouseEnter={mouseEnterTileCallback}
+                                        onMouseMove={mouseMoveTileCallback}
+                                    >
 
                                     </td>
                                 )

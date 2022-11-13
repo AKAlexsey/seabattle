@@ -15,6 +15,7 @@ Variables
   --clr-red-dark: hsl(360, 67%, 44%);
   --clr-red-light: hsl(360, 71%, 66%);
   --transition: all 0.3s linear;
+  --fast-transition: all 0.05s linear;
   --spacing: 0.25rem;
   --radius: 0.25rem;
   --large-screen-width: 1170px;
@@ -316,7 +317,7 @@ hr {
   z-index: 3;
   padding: 2rem;
   border-radius: var(--radius);
-  transition: var(--transition);
+  transition: var(--fast-transition);
   transform: translateX(0%) translateY(0%);
   background-color: white;
 }
