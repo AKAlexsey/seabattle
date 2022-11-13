@@ -15,7 +15,7 @@ const Field = (params) => {
                                         key={x}
                                         className={contains}
                                         onClick={() => pushTileCallback(x, y)}
-                                        onMouseEnter={mouseEnterTileCallback}
+                                        onMouseEnter={() => { console.log('tulie mouse over somehow not working') ; console.log(mouseEnterTileCallback()) }}
                                         onMouseMove={mouseMoveTileCallback}
                                     >
 

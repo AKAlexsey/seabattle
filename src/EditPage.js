@@ -8,7 +8,7 @@ const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 
 function EditPage() {
   const { state, generateField, addShipOnTable, 
-    closeTileMenuElement, moveTileMenuElement } = useGlobalContext()
+    closeTileMenuElement, moveTileMenuElement, openTileMenuElement } = useGlobalContext()
 
   const mouseMoveTileCallback = (e) => {
     const positionX = e.pageX + MENU_ELEMENT_MOUSE_DISTANCE;
@@ -18,6 +18,10 @@ function EditPage() {
 
   const mouseLeaveFieldCallback = (e) => {
     closeTileMenuElement();
+  }
+
+  const mouseEnterFieldCallback = (e) => {
+    return openTileMenuElement();
   }
 
   return (
@@ -31,7 +35,7 @@ function EditPage() {
         <Field
           state={state}
           pushTileCallback={addShipOnTable}
-          mouseEnterTileCallback={() => {}}
+          mouseEnterTileCallback={mouseEnterFieldCallback}
           mouseMoveTileCallback={mouseMoveTileCallback}
           mouseLeaveFieldCallback={mouseLeaveFieldCallback}
         />

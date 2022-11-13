@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { addShip, createField, shootTable, makeDefaultField, DEFAULT_WIDTH, DEFAULT_HEIGHT,  }  from "./fieldManipulationContext"
-import { makeDefaultMenuState, closeTileMenu, changeTileMenuPosition }  from "./editTileMenu"
+import { makeDefaultMenuState, closeTileMenu, changeTileMenuPosition, openTileMenu }  from "./editTileMenu"
 
 const AppContext = React.createContext()
 
@@ -78,6 +78,11 @@ const AppProvider = ({ children }) => {
         setState({ ...state, ...updatedTileMenuParams });
     }
  
+    const openTileMenuElement = () => {
+        const updatedTileMenuParams = openTileMenu()
+        return setState({ ...state, ...updatedTileMenuParams });
+    }
+ 
     const moveTileMenuElement = (x, y) => {
         const updatedTileMenuParams = changeTileMenuPosition(x, y)
         setState({ ...state, ...updatedTileMenuParams });
@@ -92,6 +97,7 @@ const AppProvider = ({ children }) => {
             addShipOnTable, 
             shootTableTile, 
             closeTileMenuElement,
+            openTileMenuElement,
             moveTileMenuElement
         }} >
             {children}

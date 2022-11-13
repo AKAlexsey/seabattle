@@ -12,7 +12,7 @@ const makeDefaultMenuState = () => {
 }
 
 const changeTileMenuPosition = (x, y) => {
-    return { positionX: x, positionY: y, opened: true };
+    return { positionX: x, positionY: y };
 }
 
 const closeTileMenu = () => {
