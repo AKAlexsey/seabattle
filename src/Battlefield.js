@@ -1,16 +1,13 @@
 import './Battlefield.css';
 import Field from './Field';
 
-import { useGlobalContext } from './context'
+import { useGlobalContext, doNothingFunction } from './context'
 
 import { Link } from "react-router-dom";
 
 
 function Battlefield() {
   const { state, shootTableTile } = useGlobalContext()
-
-  const mouseEnterTileCallback = () => { console.log('Battlefield enter event') };
-  const mouseLeaveTileCallback = () => { console.log('Battlefield leave field event') };
 
   return (
     <div className="App">
@@ -23,8 +20,9 @@ function Battlefield() {
         <Field 
           state={state}
           pushTileCallback={shootTableTile}
-          mouseEnterTileCallback={mouseEnterTileCallback}
-          mouseLeaveTileCallback={mouseLeaveTileCallback}
+          mouseEnterTileCallback={doNothingFunction}
+          mouseLeaveTileCallback={doNothingFunction}
+          tableFiltrationFunction={doNothingFunction}
         />
       </div>
 

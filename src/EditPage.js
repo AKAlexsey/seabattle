@@ -1,23 +1,34 @@
 import './Battlefield.css';
 import Field from './Field';
 import MenuElement from './MenuElement';
-import { useGlobalContext } from './context'
+import { useGlobalContext, doNothingFunction } from './context'
 import { Link } from "react-router-dom";
 
 const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 
 function EditPage() {
   const { state, generateField, addShipOnTable, 
-    closeTileMenuElement, moveTileMenuElement } = useGlobalContext()
+    closeTileMenuElement, moveTileMenuElement, openTable, setHoveredShipCoordinates, clearHoveredShipCoordinates } = useGlobalContext()
 
-  const mouseMoveTileCallback = (e) => {
-    const positionX = e.pageX + MENU_ELEMENT_MOUSE_DISTANCE;
-    const positionY = e.pageY + MENU_ELEMENT_MOUSE_DISTANCE;
-    moveTileMenuElement(positionX, positionY);
+    // TODO create component state. 
+    // And update it using "useEffect" 
+    // State must contain table and it must be
+    // 1. Filtered using `tableFiltrationFunction` function
+    // 2. Be able to filter table values after setting "hoveredSipCoordinates"
+
+    // const mouseMoveTileCallback = (e) => {
+    //   const positionX = e.pageX + MENU_ELEMENT_MOUSE_DISTANCE;
+    //   const positionY = e.pageY + MENU_ELEMENT_MOUSE_DISTANCE;
+    //   moveTileMenuElement(positionX, positionY);
+    // }
+
+
+  const mouseEnterTileCallback = (_e, x, y) => {
+    setHoveredShipCoordinates(x, y);
   }
 
   const mouseLeaveFieldCallback = (e) => {
-    closeTileMenuElement();
+    clearHoveredShipCoordinates();
   }
 
   return (
@@ -30,10 +41,11 @@ function EditPage() {
       <div className="bobard">
         <Field
           state={state}
-          pushTileCallback={addShipOnTable}
-          mouseEnterTileCallback={() => {}}
-          mouseMoveTileCallback={mouseMoveTileCallback}
-          mouseLeaveFieldCallback={mouseLeaveFieldCallback}
+          pushTileCallback={doNothingFunction}
+          mouseEnterTileCallback={mouseEnterTileCallback}
+          mouseMoveTileCallback={doNothingFunction} // mouseMoveTileCallback}
+          mouseLeaveFieldCallback={mouseLeaveFieldCallback} // mouseLeaveFieldCallback}
+          tableFiltrationFunction={openTable}
         />
       </div>
 

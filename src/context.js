@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { addShip, createField, shootTable, makeDefaultField, DEFAULT_WIDTH, DEFAULT_HEIGHT,  }  from "./fieldManipulationContext"
+import { addShip, hoverShip, createField, openAllTable, makeDefaultField, shootTable , DIRECTION_DOWN, DEFAULT_WIDTH, DEFAULT_HEIGHT, hoverShipCoordinates, 
+    displayHoveredShip}  from "./fieldManipulationContext"
 import { makeDefaultMenuState, closeTileMenu, changeTileMenuPosition }  from "./editTileMenu"
 
 const AppContext = React.createContext()
@@ -83,6 +84,30 @@ const AppProvider = ({ children }) => {
         setState({ ...state, ...updatedTileMenuParams });
     }
 
+    const openTable = (state) => {
+        const { table } = state;
+        const openedTable = openAllTable(table)
+        return { ...state, table: openedTable };
+    }
+
+    const setHoveredShipCoordinates = (hoveredShipX, hoveredShipY, direction = DIRECTION_DOWN) => {
+        const ship = {
+            size: 3,
+            id: "Id_1",
+            occupied_cells: [],
+            positionX: hoveredShipX,
+            positionY: hoveredShipY,
+            direction: direction,
+            alive: null
+        }
+
+        const hoveredSipCoordinates = hoverShipCoordinates(ship);
+        return { ...state, hoveredSipCoordinates: hoveredSipCoordinates };
+    }
+
+    const clearHoveredShipCoordinates = () => {
+        return { ...state, hoveredSipCoordinates: [] }
+    }
 
     return (
         <AppContext.Provider value={{ 
@@ -92,7 +117,11 @@ const AppProvider = ({ children }) => {
             addShipOnTable, 
             shootTableTile, 
             closeTileMenuElement,
-            moveTileMenuElement
+            moveTileMenuElement,
+            openTable,
+            doNothingFunction,
+            setHoveredShipCoordinates,
+            clearHoveredShipCoordinates,
         }} >
             {children}
         </AppContext.Provider>
@@ -103,4 +132,6 @@ const useGlobalContext = () => {
     return useContext(AppContext)
 }
 
-export { AppContext, AppProvider, useGlobalContext }
+const doNothingFunction = (value) => value;
+
+export { AppContext, AppProvider, useGlobalContext, doNothingFunction }
