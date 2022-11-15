@@ -1,9 +1,7 @@
 import { CLOSED_TILE_CLASS } from './fieldManipulationContext'
 
 const Field = (params) => {
-    const { state, pushTileCallback, mouseEnterTileCallback, mouseMoveTileCallback, mouseLeaveFieldCallback, tableFiltrationFunction } = params;
-
-    const { table } = tableFiltrationFunction(state);
+    const { table, pushTileCallback, mouseEnterTileCallback, mouseMoveTileCallback, mouseLeaveFieldCallback } = params;
 
     const getTileClass = ({ opened, contains }) => {
         if (opened) {

@@ -84,30 +84,6 @@ const AppProvider = ({ children }) => {
         setState({ ...state, ...updatedTileMenuParams });
     }
 
-    const openTable = (state) => {
-        const { table } = state;
-        const openedTable = openAllTable(table)
-        return { ...state, table: openedTable };
-    }
-
-    const setHoveredShipCoordinates = (hoveredShipX, hoveredShipY, direction = DIRECTION_DOWN) => {
-        const ship = {
-            size: 3,
-            id: "Id_1",
-            occupied_cells: [],
-            positionX: hoveredShipX,
-            positionY: hoveredShipY,
-            direction: direction,
-            alive: null
-        }
-
-        const hoveredSipCoordinates = hoverShipCoordinates(ship);
-        return { ...state, hoveredSipCoordinates: hoveredSipCoordinates };
-    }
-
-    const clearHoveredShipCoordinates = () => {
-        return { ...state, hoveredSipCoordinates: [] }
-    }
 
     return (
         <AppContext.Provider value={{ 
@@ -118,10 +94,7 @@ const AppProvider = ({ children }) => {
             shootTableTile, 
             closeTileMenuElement,
             moveTileMenuElement,
-            openTable,
-            doNothingFunction,
-            setHoveredShipCoordinates,
-            clearHoveredShipCoordinates,
+            doNothingFunction
         }} >
             {children}
         </AppContext.Provider>

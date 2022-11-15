@@ -1,34 +1,50 @@
 import './Battlefield.css';
 import Field from './Field';
+import { useState } from 'react';
 import MenuElement from './MenuElement';
 import { useGlobalContext, doNothingFunction } from './context'
 import { Link } from "react-router-dom";
+
+import { DIRECTION_DOWN, displayHoveredShip, hoverShipCoordinates, openAllTable }  from "./fieldManipulationContext"
 
 const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 
 function EditPage() {
   const { state, generateField, addShipOnTable, 
-    closeTileMenuElement, moveTileMenuElement, openTable, setHoveredShipCoordinates, clearHoveredShipCoordinates } = useGlobalContext()
+    closeTileMenuElement, moveTileMenuElement } = useGlobalContext()
 
-    // TODO create component state. 
-    // And update it using "useEffect" 
-    // State must contain table and it must be
-    // 1. Filtered using `tableFiltrationFunction` function
-    // 2. Be able to filter table values after setting "hoveredSipCoordinates"
+    const { table } = state;
 
-    // const mouseMoveTileCallback = (e) => {
-    //   const positionX = e.pageX + MENU_ELEMENT_MOUSE_DISTANCE;
-    //   const positionY = e.pageY + MENU_ELEMENT_MOUSE_DISTANCE;
-    //   moveTileMenuElement(positionX, positionY);
-    // }
+    // Here probably will be more suitable list of functions, that will apply as filtration
+    // It will allow to use chain of functions
+    // But in this case to avoid ovecomplication - 
+    const [displayTable, setDisplayTable] = useState(openAllTable(table));
+    const [displayHoverShip, setDisplayHoverShip] = useState(false);
 
+    const setHoveredShipCoordinates = (hoveredShipX, hoveredShipY, direction = DIRECTION_DOWN) => {
+      const ship = {
+          size: 3,
+          id: "Id_1",
+          occupied_cells: [],
+          positionX: hoveredShipX,
+          positionY: hoveredShipY,
+          direction: direction,
+          alive: null
+      }
+
+      const hoveredSipCoordinates = hoverShipCoordinates(ship);
+
+      const newDisplayTableValue = displayHoveredShip(openAllTable(table), hoveredSipCoordinates);
+
+      setDisplayTable(newDisplayTableValue);
+  }
 
   const mouseEnterTileCallback = (_e, x, y) => {
-    setHoveredShipCoordinates(x, y);
+    setHoveredShipCoordinates(x, y)
   }
 
   const mouseLeaveFieldCallback = (e) => {
-    clearHoveredShipCoordinates();
+    setDisplayTable(openAllTable(table));
   }
 
   return (
@@ -40,12 +56,11 @@ function EditPage() {
 
       <div className="bobard">
         <Field
-          state={state}
-          pushTileCallback={doNothingFunction}
+          table={displayTable}
+          pushTileCallback={addShipOnTable}
           mouseEnterTileCallback={mouseEnterTileCallback}
           mouseMoveTileCallback={doNothingFunction} // mouseMoveTileCallback}
           mouseLeaveFieldCallback={mouseLeaveFieldCallback} // mouseLeaveFieldCallback}
-          tableFiltrationFunction={openTable}
         />
       </div>
 

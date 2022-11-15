@@ -296,7 +296,11 @@ hr {
   background-color: green !important;
 }
 
-.game-field td.ship.blocked {
+.game-field td.hovered_ship {
+  background-color: lightgreen !important;
+}
+
+.game-field td.overlapse_ship {
   background-color: pink !important;
 }
 
@@ -312,6 +316,7 @@ hr {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  background-color: white;
 }
 
 .manipulate_section {

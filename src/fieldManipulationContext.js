@@ -19,8 +19,7 @@ const emptyTile = { opened: false, contains: EMPTY_CONTAINS, shipId: null };
 const emptyField = {
     height: 0,
     width: 0,
-    table: [[]],
-    hoveredSipCoordinates: []
+    table: [[]]
 };
 
 const createField = (height, width) => {
@@ -96,9 +95,9 @@ const displayHoveredShip = (table, hoveredSipCoordinates) => {
         if (hoveredSipCoordinates.find(({ x, y }) => x === tableX && y === tableY)) {
             const { shipId } = tile;
             if (shipId !== null) {
-                return { ...tile, contains: HOVERED_CONTAINS };
-            } else {
                 return { ...tile, contains: OVERLAPSE_CONTAINS };
+            } else {
+                return { ...tile, contains: HOVERED_CONTAINS };
             }
         } else {
             return tile;
