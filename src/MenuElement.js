@@ -1,8 +1,8 @@
 import { useRef, useEffect } from 'react'
 import { useGlobalContext } from './context'
 
-const MenuElement = ({ children }) => {
-    const { state: { opened, positionX, positionY } } = useGlobalContext();
+const MenuElement = ({ children, displayMenuState }) => {
+    const { tileMenuOpened, positionX, positionY } = displayMenuState;
     const container = useRef(null);
 
     useEffect(() => {
@@ -10,11 +10,11 @@ const MenuElement = ({ children }) => {
 
         menu.style.left = `${positionX}px`
         menu.style.top = `${positionY}px`
-    }, [opened, positionX, positionY]);
+    }, [displayMenuState]);
 
     return (
         <div
-            className={`${opened ? 'menu_element_container opened' : 'menu_element_container'}`}
+            className={`${tileMenuOpened ? 'menu_element_container opened' : 'menu_element_container'}`}
             ref={container}
         >
             {children}

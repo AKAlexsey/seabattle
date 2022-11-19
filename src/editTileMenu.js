@@ -1,6 +1,6 @@
-const makeMenuState = ({ opened = false, freeze = false, positionX = 0, positionY = 0 }) => {
+const makeMenuState = ({ tileMenuOpened = false, freeze = false, positionX = 0, positionY = 0 }) => {
     return {
-        opened,
+        tileMenuOpened,
         freeze,
         positionX,
         positionY
@@ -8,28 +8,28 @@ const makeMenuState = ({ opened = false, freeze = false, positionX = 0, position
 }
 
 const makeDefaultMenuState = () => {
-    return makeMenuState({ opened: false });
+    return makeMenuState({ tileMenuOpened: false });
 }
 
-const changeTileMenuPosition = (x, y) => {
-    return { positionX: x, positionY: y, opened: true };
+const changeTileMenuPosition = (state, x, y) => {
+    return { ...state, positionX: x, positionY: y, tileMenuOpened: true };
 }
 
-const closeTileMenu = () => {
-    return { opened: false };
+const closeTileMenu = (state) => {
+    return { ...state, tileMenuOpened: false };
 }
 
-const freezeTileMenu = () => {
-    return { freeze: true };
+const freezeTileMenu = (state) => {
+    return { ...state, freeze: true };
 }
 
-const unfreezeTileMenu = () => {
-    return { freeze: false };
+const unfreezeTileMenu = (state) => {
+    return { ...state, freeze: false };
 }
 
 // Probably not necessary
-const openTileMenu = () => {
-    return { opened: true };
+const openTileMenu = (state) => {
+    return { ...state, tileMenuOpened: true };
 }
 
 export { makeDefaultMenuState, makeMenuState, openTileMenu, closeTileMenu, changeTileMenuPosition, freezeTileMenu, unfreezeTileMenu }

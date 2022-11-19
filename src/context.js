@@ -1,7 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { addShip, hoverShip, createField, openAllTable, makeDefaultField, shootTable , DIRECTION_DOWN, DEFAULT_WIDTH, DEFAULT_HEIGHT, hoverShipCoordinates, 
     displayHoveredShip}  from "./fieldManipulationContext"
-import { makeDefaultMenuState, closeTileMenu, changeTileMenuPosition }  from "./editTileMenu"
 
 const AppContext = React.createContext()
 
@@ -9,9 +8,8 @@ const LOCAL_STORAGE_NAME = 'seaBattle';
 
 const makeDefaultState = () => {
     const defaultField = makeDefaultField();
-    const defaultMenuState = makeDefaultMenuState();
 
-    return { ...defaultField, ...defaultMenuState };
+    return { ...defaultField };
 }
 
 const geStateFromLocalStorage = () => {
@@ -73,16 +71,6 @@ const AppProvider = ({ children }) => {
         const updatedTable = shootTable(table, x, y)
         setState({ ...state, table: updatedTable })
     }
- 
-    const closeTileMenuElement = () => {
-        const updatedTileMenuParams = closeTileMenu()
-        setState({ ...state, ...updatedTileMenuParams });
-    }
- 
-    const moveTileMenuElement = (x, y) => {
-        const updatedTileMenuParams = changeTileMenuPosition(x, y)
-        setState({ ...state, ...updatedTileMenuParams });
-    }
 
 
     return (
@@ -92,9 +80,7 @@ const AppProvider = ({ children }) => {
             generateField, 
             addShipOnTable, 
             shootTableTile, 
-            closeTileMenuElement,
-            moveTileMenuElement,
-            doNothingFunction
+            doNothingFunction,
         }} >
             {children}
         </AppContext.Provider>

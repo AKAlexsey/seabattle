@@ -1,51 +1,98 @@
 import './Battlefield.css';
 import Field from './Field';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MenuElement from './MenuElement';
-import { useGlobalContext, doNothingFunction } from './context'
+import { useGlobalContext } from './context'
 import { Link } from "react-router-dom";
 
-import { DIRECTION_DOWN, displayHoveredShip, hoverShipCoordinates, openAllTable }  from "./fieldManipulationContext"
+import { DIRECTION_DOWN, displayHoveredShip, hoverShipCoordinates, openAllTable } from "./fieldManipulationContext"
+
+import { makeDefaultMenuState, closeTileMenu, changeTileMenuPosition, openTileMenu }  from "./editTileMenu"
 
 const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 
 function EditPage() {
-  const { state, generateField, addShipOnTable, 
-    closeTileMenuElement, moveTileMenuElement } = useGlobalContext()
+  const { state, generateField, addShipOnTable } = useGlobalContext()
+  
+  const { table } = state;
 
-    const { table } = state;
+  const [displayTable, setDisplayTable] = useState(openAllTable(table));
+  const [displayHoverShip, setDisplayHoverShip] = useState(false);
+  const [hoveredTileCoordinates, setHoveredTileCoordinates] = useState({x: null, y: null});
+  const [displayMenuState, setDisplayMenuState] = useState(makeDefaultMenuState());
+   
+  // Menu state API
+  const closeTileMenuElement = () => {
+      setDisplayMenuState(closeTileMenu(displayMenuState));
+  }
 
-    // Here probably will be more suitable list of functions, that will apply as filtration
-    // It will allow to use chain of functions
-    // But in this case to avoid ovecomplication - 
-    const [displayTable, setDisplayTable] = useState(openAllTable(table));
-    const [displayHoverShip, setDisplayHoverShip] = useState(false);
+  const moveTileMenuElement = (x, y) => {
+      setDisplayMenuState(changeTileMenuPosition(displayMenuState, x, y));
+  }
 
-    const setHoveredShipCoordinates = (hoveredShipX, hoveredShipY, direction = DIRECTION_DOWN) => {
-      const ship = {
-          size: 3,
-          id: "Id_1",
-          occupied_cells: [],
-          positionX: hoveredShipX,
-          positionY: hoveredShipY,
-          direction: direction,
-          alive: null
-      }
+  const openTileMenuElement = () => {
+      setDisplayMenuState(openTileMenu(displayMenuState));
+  }
 
-      const hoveredSipCoordinates = hoverShipCoordinates(ship);
+  const toggleDisplayHoverShip = () => {
+    setDisplayHoverShip(!displayHoverShip)
+  }
 
-      const newDisplayTableValue = displayHoveredShip(openAllTable(table), hoveredSipCoordinates);
+  // Display table API
+  const setHoveredShipCoordinates = (hoveredShipX, hoveredShipY, direction = DIRECTION_DOWN) => {
+    const ship = {
+      size: 3,
+      id: "Id_1",
+      occupied_cells: [],
+      positionX: hoveredShipX,
+      positionY: hoveredShipY,
+      direction: direction,
+      alive: null
+    }
 
-      setDisplayTable(newDisplayTableValue);
+    const hoveredSipCoordinates = hoverShipCoordinates(ship);
+
+    const newDisplayTableValue = displayHoveredShip(openAllTable(table), hoveredSipCoordinates);
+
+    setDisplayTable(newDisplayTableValue);
+  }
+
+  // Callbacks
+  const mouseMoveTileCallback = (e) => {
+    if (!displayHoverShip) {
+      const positionX = e.pageX + MENU_ELEMENT_MOUSE_DISTANCE;
+      const positionY = e.pageY + MENU_ELEMENT_MOUSE_DISTANCE;
+      moveTileMenuElement(positionX, positionY);
+    }
   }
 
   const mouseEnterTileCallback = (_e, x, y) => {
-    setHoveredShipCoordinates(x, y)
+    setHoveredTileCoordinates({x, y});
+
+    if (!displayHoveredShip) {
+      openTileMenuElement()
+    }
   }
 
   const mouseLeaveFieldCallback = (e) => {
-    setDisplayTable(openAllTable(table));
+    closeTileMenuElement();
+    setDisplayHoverShip(false);
   }
+
+  const pushTileCallback = (_e) => {
+    toggleDisplayHoverShip()
+  }
+
+  useEffect(() => {
+    if (displayHoverShip) {
+      const { x, y } = hoveredTileCoordinates;
+      closeTileMenuElement();
+      setHoveredShipCoordinates(x, y);
+    } else {
+      setDisplayTable(openAllTable(table));
+      openTileMenuElement();
+    }
+  }, [displayHoverShip, hoveredTileCoordinates]);
 
   return (
     <div className="App">
@@ -57,10 +104,10 @@ function EditPage() {
       <div className="bobard">
         <Field
           table={displayTable}
-          pushTileCallback={addShipOnTable}
+          pushTileCallback={pushTileCallback}
           mouseEnterTileCallback={mouseEnterTileCallback}
-          mouseMoveTileCallback={doNothingFunction} // mouseMoveTileCallback}
-          mouseLeaveFieldCallback={mouseLeaveFieldCallback} // mouseLeaveFieldCallback}
+          mouseMoveTileCallback={mouseMoveTileCallback}
+          mouseLeaveFieldCallback={mouseLeaveFieldCallback}
         />
       </div>
 
@@ -69,18 +116,21 @@ function EditPage() {
       </div>
 
       <div className='manipulate_section'>
-        <Link className='btn clear-btn'to={`battlefield`}>To the Battlefield!!</Link>
+        <Link className='btn clear-btn' to={`battlefield`}>To the Battlefield!!</Link>
       </div>
 
-      <MenuElement >
-        <article>
-          <ul>
-            <li>Menu element #1</li>
-            <li>Menu element #2</li>
-            <li>Menu element #3</li>
-          </ul>
-        </article>
-      </MenuElement>
+      {
+          <MenuElement displayMenuState={displayMenuState} >
+            <article>
+              <ul>
+                <li>Menu element #1</li>
+                <li>Menu element #2</li>
+                <li>Menu element #3</li>
+              </ul>
+            </article>
+          </MenuElement>
+      }
+
     </div>
   );
 }
