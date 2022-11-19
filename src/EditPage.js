@@ -4,34 +4,49 @@ import { useState, useEffect } from 'react';
 import MenuElement from './MenuElement';
 import { useGlobalContext } from './context'
 import { Link } from "react-router-dom";
+import Spinner from './Spinner'
 
 import { DIRECTION_DOWN, displayHoveredShip, hoverShipCoordinates, openAllTable } from "./fieldManipulationContext"
 
-import { makeDefaultMenuState, closeTileMenu, changeTileMenuPosition, openTileMenu }  from "./editTileMenu"
+import { makeDefaultMenuState, closeTileMenu, changeTileMenuPosition, openTileMenu } from "./editTileMenu"
 
 const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 
 function EditPage() {
   const { state, generateField, addShipOnTable } = useGlobalContext()
-  
+
   const { table } = state;
 
   const [displayTable, setDisplayTable] = useState(openAllTable(table));
   const [displayHoverShip, setDisplayHoverShip] = useState(false);
-  const [hoveredTileCoordinates, setHoveredTileCoordinates] = useState({x: null, y: null});
+  const [hoveredTileCoordinates, setHoveredTileCoordinates] = useState({ x: null, y: null });
   const [displayMenuState, setDisplayMenuState] = useState(makeDefaultMenuState());
-   
+
+  // Refactoring
+  // 1. Extract everything related to hovered ship into separated module
+
+  // Further steps
+  // 1. Create adding hovered ship (Including validation that ship does not hover and there are no ships around and it's inside the field)
+  //    (probably in editTileMenu and rename it to shipsEdigMenu)
+  //    1.1. Add ability to change direction of ship using keys and space
+  // 2. Create state machine for adding ship using menu (editTileMenu)
+  // 3. Create event handler for ESC button pressing
+  // 4. Create ships template and added ships counter
+  // 5. Add ability to use Menu to select ship from template
+  // 6. For Battlefield (Add way to detect dead ship and opening of all tables around killed ship)
+  // 7. Add abilitiy for chanding ship direction 
+
   // Menu state API
   const closeTileMenuElement = () => {
-      setDisplayMenuState(closeTileMenu(displayMenuState));
+    setDisplayMenuState(closeTileMenu(displayMenuState));
   }
 
   const moveTileMenuElement = (x, y) => {
-      setDisplayMenuState(changeTileMenuPosition(displayMenuState, x, y));
+    setDisplayMenuState(changeTileMenuPosition(displayMenuState, x, y));
   }
 
   const openTileMenuElement = () => {
-      setDisplayMenuState(openTileMenu(displayMenuState));
+    setDisplayMenuState(openTileMenu(displayMenuState));
   }
 
   const toggleDisplayHoverShip = () => {
@@ -67,7 +82,7 @@ function EditPage() {
   }
 
   const mouseEnterTileCallback = (_e, x, y) => {
-    setHoveredTileCoordinates({x, y});
+    setHoveredTileCoordinates({ x, y });
 
     if (!displayHoveredShip) {
       openTileMenuElement()
@@ -79,7 +94,8 @@ function EditPage() {
     setDisplayHoverShip(false);
   }
 
-  const pushTileCallback = (_e) => {
+  const pushTileCallback = (x, y) => {
+    // addShipOnTable(x, y)
     toggleDisplayHoverShip()
   }
 
@@ -120,15 +136,11 @@ function EditPage() {
       </div>
 
       {
-          <MenuElement displayMenuState={displayMenuState} >
-            <article>
-              <ul>
-                <li>Menu element #1</li>
-                <li>Menu element #2</li>
-                <li>Menu element #3</li>
-              </ul>
-            </article>
-          </MenuElement>
+        <MenuElement displayMenuState={displayMenuState} >
+          <article>
+            <Spinner />
+          </article>
+        </MenuElement>
       }
 
     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { addShip, hoverShip, createField, openAllTable, makeDefaultField, shootTable , DIRECTION_DOWN, DEFAULT_WIDTH, DEFAULT_HEIGHT, hoverShipCoordinates, 
-    displayHoveredShip}  from "./fieldManipulationContext"
+import {
+    addShip, createField, makeDefaultField, shootTable, DEFAULT_WIDTH, DEFAULT_HEIGHT, openTile
+} from "./fieldManipulationContext"
 
 const AppContext = React.createContext()
 
@@ -15,11 +16,11 @@ const makeDefaultState = () => {
 const geStateFromLocalStorage = () => {
     const seaBattleState = localStorage.getItem(LOCAL_STORAGE_NAME);
     if (seaBattleState) {
-      return JSON.parse(seaBattleState);
+        return JSON.parse(seaBattleState);
     } else {
-      return makeDefaultState();
+        return makeDefaultState();
     }
-  };
+};
 
 const AppProvider = ({ children }) => {
     const [state, setState] = useState(geStateFromLocalStorage());
@@ -28,29 +29,8 @@ const AppProvider = ({ children }) => {
         localStorage.setItem(LOCAL_STORAGE_NAME, JSON.stringify(state))
     }, [state]);
 
-    const openTile = (x, y) => {
-        const { width, height, table } = state;
-
-        if (x < 0 || x >= width) {
-            console.log(`X is invalid ${x} ${y}`)
-            return null;
-        }
-
-        if (y < 0 || y >= height) {
-            console.log(`Y is invalid ${x} ${y}`)
-            return null;
-        }
-
-        const newTable = table.map((row, tileY) => {
-            if (tileY === y) {
-                return row.map((tile, tileX) => {
-                    return (tileX === x) ? { ...tile, opened: true } : tile
-                })
-            } else {
-                return row;
-            }
-        })
-        setState({ ...state, table: newTable })
+    const openTileElement = (x, y) => {
+        setState(openTile(state, x, y));
     }
 
     const generateField = (width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT) => {
@@ -60,26 +40,21 @@ const AppProvider = ({ children }) => {
     }
 
     const addShipOnTable = (x, y) => {
-        const { table } = state;
-        const updatedTable = addShip(table, x, y , `randomId_234`)
-
-        setState({ ...state, table: updatedTable })
+        setState(addShip(state, x, y));
     }
 
-    const shootTableTile = (x, y) => {
-        const { table } = state;
-        const updatedTable = shootTable(table, x, y)
-        setState({ ...state, table: updatedTable })
+    const shootTableTileElement = (x, y) => {
+        setState(shootTable(state, x, y));
     }
 
 
     return (
-        <AppContext.Provider value={{ 
-            state, 
-            openTile, 
-            generateField, 
-            addShipOnTable, 
-            shootTableTile, 
+        <AppContext.Provider value={{
+            state,
+            openTileElement,
+            generateField,
+            addShipOnTable,
+            shootTableTileElement,
             doNothingFunction,
         }} >
             {children}

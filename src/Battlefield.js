@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 
 function Battlefield() {
-  const { state: { table }, shootTableTile } = useGlobalContext()
+  const { state: { table }, shootTableTileElement } = useGlobalContext()
 
   return (
     <div className="App">
@@ -19,7 +19,7 @@ function Battlefield() {
       <div className="bobard">
         <Field 
           table={table}
-          pushTileCallback={shootTableTile}
+          pushTileCallback={shootTableTileElement}
           mouseEnterTileCallback={doNothingFunction}
           mouseLeaveTileCallback={doNothingFunction}
           tableFiltrationFunction={doNothingFunction}

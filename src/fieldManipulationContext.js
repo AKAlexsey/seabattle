@@ -10,10 +10,12 @@ const CLOSED_TILE_CLASS = 'closed'
 const DEFAULT_WIDTH = 10;
 const DEFAULT_HEIGHT = 10;
 
+// There are only 2 directions enough "vertical" and "horizontal"
 const DIRECTION_UP = 'up';
 const DIRECTION_RIGHT = 'right';
 const DIRECTION_DOWN = 'down';
 const DIRECTION_LEFT = 'left';
+
 
 const emptyTile = { opened: false, contains: EMPTY_CONTAINS, shipId: null };
 const emptyField = {
@@ -36,27 +38,24 @@ const makeDefaultField = () => {
     return createField(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 }
 
-const addShip = (table, x, y, shipId) => {
-    return tableElementsMap(table, (tile, tableX, tableY) => {
+const addShip = (state, x, y, shipId) => {
+    const { table } = state;
+
+    const updatedTable = tableElementsMap(table, (tile, tableX, tableY) => {
         if (tableX === x && tableY === y) {
             return { ...tile, shipId: shipId, contains: SHIP_CONTAINS }
         } else {
             return tile
         }
-    })
+    });
+
+    return { ...state, table: updatedTable };
 }
 
-// Map function must be 3 arity. Second and third argument are indexes of iterated tiles.
-const tableElementsMap = (table, iterator) => {
-    return table.map((row, tableY) => {
-        return row.map((tile, tableX) => {
-            return iterator(tile, tableX, tableY)
-        })
-    })
-}
+const shootTable = (state, x, y) => {
+    const { table } = state;
 
-const shootTable = (table, x, y) => {
-    return tableElementsMap(table, (tile, tableX, tableY) => {
+    const updatedTable = tableElementsMap(table, (tile, tableX, tableY) => {
         if (tableX === x && tableY === y) {
             // Need to send shipId to some observer to display is ship still alive.
             const { contains } = tile;
@@ -65,6 +64,42 @@ const shootTable = (table, x, y) => {
         } else {
             return tile;
         }
+    })
+    return { ...state, table: updatedTable };
+}
+
+const openTile = (state, x, y) => {
+    const { width, height, table } = state;
+
+    if (x < 0 || x >= width) {
+        console.log(`X is invalid ${x} ${y}`)
+        return null;
+    }
+
+    if (y < 0 || y >= height) {
+        console.log(`Y is invalid ${x} ${y}`)
+        return null;
+    }
+
+    const newTable = table.map((row, tileY) => {
+        if (tileY === y) {
+            return row.map((tile, tileX) => {
+                return (tileX === x) ? { ...tile, opened: true } : tile
+            })
+        } else {
+            return row;
+        }
+    })
+
+    return { ...state, table: newTable };
+}
+
+// Map function must be 3 arity. Second and third argument are indexes of iterated tiles.
+const tableElementsMap = (table, iterator) => {
+    return table.map((row, tableY) => {
+        return row.map((tile, tableX) => {
+            return iterator(tile, tableX, tableY)
+        })
     })
 }
 
@@ -160,6 +195,7 @@ export {
     createField,
     openAllTable,
     shootTable,
+    openTile,
 
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
