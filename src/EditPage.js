@@ -7,39 +7,43 @@ import { Link } from "react-router-dom";
 
 import { DIRECTION_DOWN, displayHoveredShip, hoverShipCoordinates, openAllTable } from "./fieldManipulationContext"
 
-import { makeDefaultMenuState, closeTileMenu, changeTileMenuPosition, openTileMenu }  from "./editTileMenu"
+import { makeMenuState, makeDefaultMenuState, closeTileMenu, interactWithTileMenu, changeTileMenuPosition, openTileMenu, hoverShipHideTileMenu, nextMenuState, previousMenuState, CLOSED, OPENED, INTERACTING, HOVER_SHIP } from "./editTileMenu"
 
 const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 
 function EditPage() {
   const { state, generateField, addShipOnTable } = useGlobalContext()
-  
+
   const { table } = state;
 
   const [displayTable, setDisplayTable] = useState(openAllTable(table));
-  const [displayHoverShip, setDisplayHoverShip] = useState(false);
-  const [hoveredTileCoordinates, setHoveredTileCoordinates] = useState({x: null, y: null});
+  const [hoveredTileCoordinates, setHoveredTileCoordinates] = useState({ x: null, y: null });
   const [displayMenuState, setDisplayMenuState] = useState(makeDefaultMenuState());
-   
+  const { menuState } = displayMenuState;
+
   // Menu state API
   const closeTileMenuElement = () => {
-      setDisplayMenuState(closeTileMenu(displayMenuState));
+    setDisplayMenuState(closeTileMenu(displayMenuState));
   }
 
   const moveTileMenuElement = (x, y) => {
-      setDisplayMenuState(changeTileMenuPosition(displayMenuState, x, y));
+    setDisplayMenuState(changeTileMenuPosition(displayMenuState, x, y));
   }
 
   const openTileMenuElement = () => {
-      setDisplayMenuState(openTileMenu(displayMenuState));
+    setDisplayMenuState(openTileMenu(displayMenuState));
   }
 
-  const toggleDisplayHoverShip = () => {
-    setDisplayHoverShip(!displayHoverShip)
+  const interactWithTileMenuElement = () => {
+    setDisplayMenuState(interactWithTileMenu(displayMenuState));
   }
+
+  // const toggleDisplayHoverShip = () => {
+  //   setDisplayHoverShip(!hoverShip)
+  // }
 
   // Display table API
-  const setHoveredShipCoordinates = (hoveredShipX, hoveredShipY, direction = DIRECTION_DOWN) => {
+  const displayHoveredShipOnTable = (hoveredShipX, hoveredShipY, direction = DIRECTION_DOWN) => {
     const ship = {
       size: 3,
       id: "Id_1",
@@ -59,7 +63,7 @@ function EditPage() {
 
   // Callbacks
   const mouseMoveTileCallback = (e) => {
-    if (!displayHoverShip) {
+    if (menuState === OPENED || menuState === CLOSED) {
       const positionX = e.pageX + MENU_ELEMENT_MOUSE_DISTANCE;
       const positionY = e.pageY + MENU_ELEMENT_MOUSE_DISTANCE;
       moveTileMenuElement(positionX, positionY);
@@ -67,32 +71,21 @@ function EditPage() {
   }
 
   const mouseEnterTileCallback = (_e, x, y) => {
-    setHoveredTileCoordinates({x, y});
-
-    if (!displayHoveredShip) {
-      openTileMenuElement()
-    }
-  }
-
-  const mouseLeaveFieldCallback = (e) => {
-    closeTileMenuElement();
-    setDisplayHoverShip(false);
+    setHoveredTileCoordinates({ x, y });
   }
 
   const pushTileCallback = (_e) => {
-    toggleDisplayHoverShip()
+    setDisplayMenuState(nextMenuState(displayMenuState))
   }
 
   useEffect(() => {
-    if (displayHoverShip) {
+    if (menuState === HOVER_SHIP) {
       const { x, y } = hoveredTileCoordinates;
-      closeTileMenuElement();
-      setHoveredShipCoordinates(x, y);
+      displayHoveredShipOnTable(x, y);
     } else {
       setDisplayTable(openAllTable(table));
-      openTileMenuElement();
     }
-  }, [displayHoverShip, hoveredTileCoordinates]);
+  }, [menuState, hoveredTileCoordinates]);
 
   return (
     <div className="App">
@@ -107,7 +100,7 @@ function EditPage() {
           pushTileCallback={pushTileCallback}
           mouseEnterTileCallback={mouseEnterTileCallback}
           mouseMoveTileCallback={mouseMoveTileCallback}
-          mouseLeaveFieldCallback={mouseLeaveFieldCallback}
+          mouseLeaveFieldCallback={closeTileMenuElement}
         />
       </div>
 
@@ -120,15 +113,15 @@ function EditPage() {
       </div>
 
       {
-          <MenuElement displayMenuState={displayMenuState} >
-            <article>
-              <ul>
-                <li>Menu element #1</li>
-                <li>Menu element #2</li>
-                <li>Menu element #3</li>
-              </ul>
-            </article>
-          </MenuElement>
+        <MenuElement displayMenuState={displayMenuState} >
+          <article>
+            <ul>
+              <li>Menu element #1</li>
+              <li>Menu element #2</li>
+              <li>Menu element #3</li>
+            </ul>
+          </article>
+        </MenuElement>
       }
 
     </div>
