@@ -14,7 +14,10 @@ const makeMenuState = ({ menuState = CLOSED, positionX = 0, positionY = 0 }) => 
     return {
         menuState: CLOSED,
         positionX: 0,
-        positionY: 0
+        positionY: 0,
+        hoveredShipSize: 1,
+        hoveredShipOrder: 1,
+        hoveredShipDirection: 'down'
     };
 }
 
@@ -42,6 +45,10 @@ const hoverShipHideTileMenu = (state) => {
     return { ...state, menuState: HOVER_SHIP };
 }
 
+const setHoveredShip = (state, order, size, direction = 'down') => {
+    return { ...state, order, size, direction };
+}
+
 // Probably not necessary
 
 const MENU_STATES = [CLOSED, OPENED, INTERACTING, HOVER_SHIP]
@@ -67,4 +74,7 @@ const previousMenuState = (currentState) => {
 }
 
 export { makeDefaultMenuState, makeMenuState, 
-    openTileMenu, closeTileMenu, interactWithTileMenu, changeTileMenuPosition, nextMenuState, previousMenuState, hoverShipHideTileMenu }
+    openTileMenu, closeTileMenu, 
+    interactWithTileMenu, changeTileMenuPosition, 
+    nextMenuState, previousMenuState, hoverShipHideTileMenu, 
+    setHoveredShip }

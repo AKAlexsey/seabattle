@@ -270,12 +270,19 @@ hr {
   border-width: 0.25px;
 }
 
+.game-field-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .game-field {
   border-collapse: collapse;
   /* float: center; */
   display: flex;
   justify-content: center;
   align-items: center;
+  width: fit-content;
 }
 
 .game-field td {
@@ -339,4 +346,13 @@ hr {
 
 .menu_element_container.opened {
   display: block;
+}
+
+.menu_element_container.interacting {
+  border: 1px solid black;
+}
+
+.all_ships_selected {
+  background-color: #2680c0;
+  font-weight: 700;
 }

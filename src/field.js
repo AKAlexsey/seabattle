@@ -12,9 +12,9 @@ const Field = (params) => {
 
     }
 
-    return (<div>
+    return (<div className='game-field-container' onMouseEnter={mouseLeaveFieldCallback}>
         <table className='game-field'>
-            <tbody onMouseLeave={mouseLeaveFieldCallback}>
+            <tbody>
                 {
                     table.map((row, y) => {
                         return (<tr key={y}>

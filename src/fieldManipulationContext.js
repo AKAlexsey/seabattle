@@ -19,8 +19,34 @@ const emptyTile = { opened: false, contains: EMPTY_CONTAINS, shipId: null };
 const emptyField = {
     height: 0,
     width: 0,
-    table: [[]]
+    table: [[]],
+    shipTemplates: [],
+    ships: []
 };
+
+const makeShipTempalte = (size = 1, shipsCount = 1) => {
+    return { size, shipsCount, shipsPlaced: 0 }
+}
+
+const defaultShipTempaltes = [
+    makeShipTempalte(1, 4),
+    makeShipTempalte(2, 3),
+    makeShipTempalte(3, 2),
+    makeShipTempalte(4, 1),
+]
+
+const makeShip = (order, size, direction, positionX, positionY) => {
+    return {
+        id: `ID_${order}_${size}`,
+        occupiedCoordinates: hoverShipCoordinates({ size, direction, positionX, positionY }),
+        destructedCoordinates: [],
+        size,
+        positionX,
+        positionY,
+        direction,
+        alive: true
+    }
+}
 
 const createField = (height, width) => {
     const generatedTable = Array(height).fill().map(() => Array(width).fill(emptyTile));
@@ -28,7 +54,9 @@ const createField = (height, width) => {
         ...emptyField,
         height: height,
         width: width,
-        table: generatedTable
+        table: generatedTable,
+        shipTemplates: defaultShipTempaltes,
+        ships: []
     };
 }
 
@@ -36,12 +64,31 @@ const makeDefaultField = () => {
     return createField(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 }
 
-const addShip = (table, x, y, shipId) => {
-    return tableElementsMap(table, (tile, tableX, tableY) => {
-        if (tableX === x && tableY === y) {
-            return { ...tile, shipId: shipId, contains: SHIP_CONTAINS }
+const addShip = (state, order, size, direction, positionX, positionY) => {
+    const newShip = makeShip(order, size, direction, positionX, positionY)
+    const { id, hoverShipCoordinates } = newShip
+    const { table, ships, shipTemplates } = state;
+
+    const updatedTable = tableElementsMap(table, (tile, tableX, tableY) => {
+        if (hoverShipCoordinates.find(({ x, y }) => tableX === x && tableY === y)) {
+            return { ...tile, shipId: id, contains: SHIP_CONTAINS }
         } else {
             return tile
+        }
+    })
+
+    const updatedShipTempaltes = placeShipFromTemplate(shipTemplates, size);
+
+    return { ...state, table: updatedTable, ships: ships.push(newShip), shipTemplates: updatedShipTempaltes }
+}
+
+const placeShipFromTemplate = (shipTempaltes, addedShipSize) => {
+    return shipTempaltes.map((shipTemplate) => {
+        const { size, shipsPlaced } = shipTemplate;
+        if (size === addedShipSize) {
+            return { ...shipTemplate, shipsPlaced: (shipsPlaced + 1) }
+        } else {
+            return shipTemplate;
         }
     })
 }
@@ -135,15 +182,23 @@ const shipCellCoordinates = {
     alive: [true, false]
 }
 
+// const shipTemplate = {
+//     size: [1 - 4],
+//     shipsCount: 1 - 4,
+//     shipsInstalled: 0-shipCount
+// }
+
 const ship = {
     size: [1, 4],
     id: "Id_1",
-    occupied_cells: [shipCellCoordinates, shipCellCoordinates],
+    occupiedCells: [shipCellCoordinates, shipCellCoordinates],
     positionX: [0 - DEFAULT_WIDTH],
     positionY: [0 - DEFAULT_HEIGHT],
     direction: ['top', 'right', 'down', 'left'],
     alive: [true, false]
 }
+
+const shipsList = [ship]
 
 const shipsCollection = [
     ship,

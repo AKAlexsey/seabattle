@@ -59,11 +59,8 @@ const AppProvider = ({ children }) => {
         setState({ ...state, ...newField });
     }
 
-    const addShipOnTable = (x, y) => {
-        const { table } = state;
-        const updatedTable = addShip(table, x, y , `randomId_234`)
-
-        setState({ ...state, table: updatedTable })
+    const addShipOnTable = (order, size, direction, x, y) => {
+        setState(addShip(state, order, size, direction, x, y))
     }
 
     const shootTableTile = (x, y) => {

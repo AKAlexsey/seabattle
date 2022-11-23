@@ -7,14 +7,14 @@ import { Link } from "react-router-dom";
 
 import { DIRECTION_DOWN, displayHoveredShip, hoverShipCoordinates, openAllTable } from "./fieldManipulationContext"
 
-import { makeMenuState, makeDefaultMenuState, closeTileMenu, interactWithTileMenu, changeTileMenuPosition, openTileMenu, hoverShipHideTileMenu, nextMenuState, previousMenuState, CLOSED, OPENED, INTERACTING, HOVER_SHIP } from "./editTileMenu"
+import { makeMenuState, makeDefaultMenuState, closeTileMenu, interactWithTileMenu, changeTileMenuPosition, openTileMenu, hoverShipHideTileMenu, nextMenuState, previousMenuState, setHoveredShip, CLOSED, OPENED, INTERACTING, HOVER_SHIP } from "./editTileMenu"
 
 const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 
 function EditPage() {
   const { state, generateField, addShipOnTable } = useGlobalContext()
 
-  const { table } = state;
+  const { table, shipTemplates } = state;
 
   const [displayTable, setDisplayTable] = useState(openAllTable(table));
   const [hoveredTileCoordinates, setHoveredTileCoordinates] = useState({ x: null, y: null });
@@ -75,7 +75,22 @@ function EditPage() {
   }
 
   const pushTileCallback = (_e) => {
-    setDisplayMenuState(nextMenuState(displayMenuState))
+    if (menuState === HOVER_SHIP) {
+      const { hoveredShipOrder, hoveredShipSize, hoveredShipDirection } = displayMenuState;
+      const { x, y } = hoveredTileCoordinates;
+      addShipOnTable(hoveredShipOrder, hoveredShipSize, hoveredShipDirection, x, y);
+    }
+    setDisplayMenuState(nextMenuState(displayMenuState));
+  }
+
+  const mouseLeaveFieldCallback = (e) => {
+    closeTileMenuElement();
+  }
+
+  const selectedMenuElementCallback = (order, size) => {
+    console.log(`selectedMenuElementCallback order ${order} ${size}`);
+    const udpatedState = setHoveredShip(displayMenuState, order, size);
+    setDisplayMenuState(hoverShipHideTileMenu(udpatedState));
   }
 
   useEffect(() => {
@@ -100,7 +115,7 @@ function EditPage() {
           pushTileCallback={pushTileCallback}
           mouseEnterTileCallback={mouseEnterTileCallback}
           mouseMoveTileCallback={mouseMoveTileCallback}
-          mouseLeaveFieldCallback={closeTileMenuElement}
+          mouseLeaveFieldCallback={mouseLeaveFieldCallback}
         />
       </div>
 
@@ -113,12 +128,24 @@ function EditPage() {
       </div>
 
       {
-        <MenuElement displayMenuState={displayMenuState} >
+        <MenuElement displayMenuState={displayMenuState} hoverMenuCallback={interactWithTileMenuElement} >
           <article>
             <ul>
-              <li>Menu element #1</li>
-              <li>Menu element #2</li>
-              <li>Menu element #3</li>
+              {
+                shipTemplates.map(({ size, shipsCount, shipsPlaced }) => {
+                  const menuText = `Ship ${size}. ${shipsCount}/${shipsPlaced}`;
+                  const allshipsPlaced = shipsCount === shipsPlaced;
+                  return (
+                    <li 
+                      key={size}
+                      className={allshipsPlaced ? 'all_ships_selected' : ''} 
+                      onMouseDown={() => { return allshipsPlaced ? () => {} : selectedMenuElementCallback(shipsPlaced, size) }}
+                    >
+                      {menuText}
+                    </li>
+                  );
+                })
+              }
             </ul>
           </article>
         </MenuElement>
