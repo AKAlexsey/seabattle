@@ -15,9 +15,9 @@ const makeMenuState = ({ menuState = CLOSED, positionX = 0, positionY = 0 }) => 
         menuState: CLOSED,
         positionX: 0,
         positionY: 0,
-        hoveredShipSize: 1,
-        hoveredShipOrder: 1,
-        hoveredShipDirection: 'down'
+        size: 1,
+        order: 1,
+        direction: 'down'
     };
 }
 

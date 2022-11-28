@@ -352,7 +352,19 @@ hr {
   border: 1px solid black;
 }
 
-.all_ships_selected {
+.all_ships_placed {
   background-color: #2680c0;
   font-weight: 700;
+}
+
+.edit_header {
+  padding: 6px;
+  align-items: center;
+  display: block;
+  text-align: center;
+}
+
+.edit_header span {
+  padding-left: 6px;
+  padding-right: 6px;
 }

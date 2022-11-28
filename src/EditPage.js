@@ -5,7 +5,7 @@ import MenuElement from './MenuElement';
 import { useGlobalContext } from './context'
 import { Link } from "react-router-dom";
 
-import { DIRECTION_DOWN, displayHoveredShip, hoverShipCoordinates, openAllTable } from "./fieldManipulationContext"
+import { DIRECTION_DOWN, displayHoveredShip, hoverShipCoordinates, openAllTable, makeShip } from "./fieldManipulationContext"
 
 import { makeMenuState, makeDefaultMenuState, closeTileMenu, interactWithTileMenu, changeTileMenuPosition, openTileMenu, hoverShipHideTileMenu, nextMenuState, previousMenuState, setHoveredShip, CLOSED, OPENED, INTERACTING, HOVER_SHIP } from "./editTileMenu"
 
@@ -19,7 +19,7 @@ function EditPage() {
   const [displayTable, setDisplayTable] = useState(openAllTable(table));
   const [hoveredTileCoordinates, setHoveredTileCoordinates] = useState({ x: null, y: null });
   const [displayMenuState, setDisplayMenuState] = useState(makeDefaultMenuState());
-  const { menuState } = displayMenuState;
+  const { menuState, order, size, direction } = displayMenuState;
 
   // Menu state API
   const closeTileMenuElement = () => {
@@ -43,16 +43,8 @@ function EditPage() {
   // }
 
   // Display table API
-  const displayHoveredShipOnTable = (hoveredShipX, hoveredShipY, direction = DIRECTION_DOWN) => {
-    const ship = {
-      size: 3,
-      id: "Id_1",
-      occupied_cells: [],
-      positionX: hoveredShipX,
-      positionY: hoveredShipY,
-      direction: direction,
-      alive: null
-    }
+  const displayHoveredShipOnTable = (hoveredShipX, hoveredShipY, order, size, direction = DIRECTION_DOWN) => {
+    const ship = makeShip(order, size, direction, hoveredShipX, hoveredShipY);
 
     const hoveredSipCoordinates = hoverShipCoordinates(ship);
 
@@ -76,38 +68,48 @@ function EditPage() {
 
   const pushTileCallback = (_e) => {
     if (menuState === HOVER_SHIP) {
-      const { hoveredShipOrder, hoveredShipSize, hoveredShipDirection } = displayMenuState;
+      const { order, size, direction } = displayMenuState;
       const { x, y } = hoveredTileCoordinates;
-      addShipOnTable(hoveredShipOrder, hoveredShipSize, hoveredShipDirection, x, y);
+      addShipOnTable(order, size, direction, x, y);
     }
     setDisplayMenuState(nextMenuState(displayMenuState));
   }
 
   const mouseLeaveFieldCallback = (e) => {
-    closeTileMenuElement();
+    // closeTileMenuElement();
   }
 
   const selectedMenuElementCallback = (order, size) => {
-    console.log(`selectedMenuElementCallback order ${order} ${size}`);
     const udpatedState = setHoveredShip(displayMenuState, order, size);
     setDisplayMenuState(hoverShipHideTileMenu(udpatedState));
   }
 
   useEffect(() => {
+    // table must not be in this callback variables
+    // To avoid infinity loop
     if (menuState === HOVER_SHIP) {
       const { x, y } = hoveredTileCoordinates;
-      displayHoveredShipOnTable(x, y);
+      displayHoveredShipOnTable(x, y, order, size, direction);
     } else {
       setDisplayTable(openAllTable(table));
     }
-  }, [menuState, hoveredTileCoordinates]);
+  }, [menuState, hoveredTileCoordinates, order, size, direction]);
 
   return (
     <div className="App">
 
-      <header>
-        EditPage
+      <header className='edit_header'>
+        <span>
+          EditPage
+        </span>
+
+        <span>
+          <button className='btn remove-btn' onClick={() => { generateField() }}>Generate Field</button>
+        </span>
+        
       </header>
+
+
 
       <div className="bobard">
         <Field
@@ -120,10 +122,6 @@ function EditPage() {
       </div>
 
       <div className='manipulate_section'>
-        <button className='btn remove-btn' onClick={() => { generateField() }}>Generate Field</button>
-      </div>
-
-      <div className='manipulate_section'>
         <Link className='btn clear-btn' to={`battlefield`}>To the Battlefield!!</Link>
       </div>
 
@@ -132,13 +130,13 @@ function EditPage() {
           <article>
             <ul>
               {
-                shipTemplates.map(({ size, shipsCount, shipsPlaced }) => {
-                  const menuText = `Ship ${size}. ${shipsCount}/${shipsPlaced}`;
-                  const allshipsPlaced = shipsCount === shipsPlaced;
+                shipTemplates.map(({ size, maxShips, shipsPlaced }) => {
+                  const menuText = `Ship ${size}. ${maxShips}/${shipsPlaced}`;
+                  const allshipsPlaced = maxShips === shipsPlaced;
                   return (
                     <li 
                       key={size}
-                      className={allshipsPlaced ? 'all_ships_selected' : ''} 
+                      className={allshipsPlaced ? 'all_ships_placed' : ''} 
                       onMouseDown={() => { return allshipsPlaced ? () => {} : selectedMenuElementCallback(shipsPlaced, size) }}
                     >
                       {menuText}

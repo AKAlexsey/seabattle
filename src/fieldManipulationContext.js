@@ -24,8 +24,8 @@ const emptyField = {
     ships: []
 };
 
-const makeShipTempalte = (size = 1, shipsCount = 1) => {
-    return { size, shipsCount, shipsPlaced: 0 }
+const makeShipTempalte = (size = 1, maxShips = 1) => {
+    return { size, maxShips, shipsPlaced: 0 }
 }
 
 const defaultShipTempaltes = [
@@ -38,7 +38,7 @@ const defaultShipTempaltes = [
 const makeShip = (order, size, direction, positionX, positionY) => {
     return {
         id: `ID_${order}_${size}`,
-        occupiedCoordinates: hoverShipCoordinates({ size, direction, positionX, positionY }),
+        hoverShipCoordinates: hoverShipCoordinates({ size, direction, positionX, positionY }),
         destructedCoordinates: [],
         size,
         positionX,
@@ -79,7 +79,7 @@ const addShip = (state, order, size, direction, positionX, positionY) => {
 
     const updatedShipTempaltes = placeShipFromTemplate(shipTemplates, size);
 
-    return { ...state, table: updatedTable, ships: ships.push(newShip), shipTemplates: updatedShipTempaltes }
+    return { ...state, table: updatedTable, ships: [...ships, newShip], shipTemplates: updatedShipTempaltes }
 }
 
 const placeShipFromTemplate = (shipTempaltes, addedShipSize) => {
@@ -209,6 +209,7 @@ const shipsCollection = [
 
 export {
     addShip,
+    makeShip,
     hoverShipCoordinates,
     displayHoveredShip,
     makeDefaultField,
