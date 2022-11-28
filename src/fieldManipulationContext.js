@@ -3,6 +3,7 @@ const MISS_SHOT_CONTAINS = 'miss_shot'
 const SHIP_CONTAINS = 'ship'
 const DEAD_SHIP_CONTAINS = 'dead_ship'
 const HOVERED_CONTAINS = 'hovered_ship'
+const HOVERED_COLLISION_CONTAINS = 'hovered_ship_collision'
 const OVERLAPSE_CONTAINS = 'overlapse_ship'
 
 const CLOSED_TILE_CLASS = 'closed'
@@ -69,22 +70,13 @@ const addShip = (state, order, size, direction, positionX, positionY) => {
     const { id, hoverShipCoordinates } = newShip
     const { table, ships, shipTemplates } = state;
 
-    if (hoverShipCollisions(hoverShipCoordinates)) {
-
-        const updatedTable = tableElementsMap(table, (tile, tableX, tableY) => {
-            if (hoverShipCollisions(hoverShipCoordinates)) {
-                return {};
-            } else if (hoverShipCoordinates.find(({ x, y }) => tableX === x && tableY === y)) {
-                return { ...tile, shipId: id, contains: SHIP_CONTAINS }
-            } else{
-                return tile
-            }
-        })
-    } else {
-
-    };
-
-    
+    const updatedTable = tableElementsMap(table, (tile, tableX, tableY) => {
+        if (hoverShipCoordinates.find(({ x, y }) => tableX === x && tableY === y)) {
+            return { ...tile, shipId: id, contains: SHIP_CONTAINS }
+        } else {
+            return tile
+        }
+    })
 
     const updatedShipTempaltes = placeShipFromTemplate(shipTemplates, size);
 
@@ -128,6 +120,12 @@ const shootTable = (table, x, y) => {
 const openAllTable = (table) => {
     return tableElementsMap(table, (tile, _tableX, _tableY) => {
         return { ...tile, opened: true }
+    })
+}
+
+const displayHoverShip = (table, hover) => {
+    return tableElementsMap(table, (tile, _tableX, _tableY) => {
+        return { ...tile, contains: true }
     })
 }
 
@@ -241,6 +239,7 @@ export {
     SHIP_CONTAINS,
     DEAD_SHIP_CONTAINS,
     HOVERED_CONTAINS,
+    HOVERED_COLLISION_CONTAINS,
     OVERLAPSE_CONTAINS
 }
 
