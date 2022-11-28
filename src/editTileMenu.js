@@ -17,7 +17,9 @@ const makeMenuState = ({ menuState = CLOSED, positionX = 0, positionY = 0 }) => 
         positionY: 0,
         size: 1,
         order: 1,
-        direction: 'down'
+        direction: 'down',
+        x: null, 
+        y: null
     };
 }
 
@@ -49,6 +51,14 @@ const setHoveredShip = (state, order, size, direction = 'down') => {
     return { ...state, order, size, direction };
 }
 
+const setHoverTileCoordinates = (state, x, y) => {
+    return { ...state, x, y };
+}
+
+const nullifyHoverTileCoordinates = (state) => {
+    return { ...state, x: null, y: null };
+}
+
 // Probably not necessary
 
 const MENU_STATES = [CLOSED, OPENED, INTERACTING, HOVER_SHIP]
@@ -77,4 +87,4 @@ export { makeDefaultMenuState, makeMenuState,
     openTileMenu, closeTileMenu, 
     interactWithTileMenu, changeTileMenuPosition, 
     nextMenuState, previousMenuState, hoverShipHideTileMenu, 
-    setHoveredShip }
+    setHoveredShip, nullifyHoverTileCoordinates, setHoverTileCoordinates }

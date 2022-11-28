@@ -69,13 +69,22 @@ const addShip = (state, order, size, direction, positionX, positionY) => {
     const { id, hoverShipCoordinates } = newShip
     const { table, ships, shipTemplates } = state;
 
-    const updatedTable = tableElementsMap(table, (tile, tableX, tableY) => {
-        if (hoverShipCoordinates.find(({ x, y }) => tableX === x && tableY === y)) {
-            return { ...tile, shipId: id, contains: SHIP_CONTAINS }
-        } else {
-            return tile
-        }
-    })
+    if (hoverShipCollisions(hoverShipCoordinates)) {
+
+        const updatedTable = tableElementsMap(table, (tile, tableX, tableY) => {
+            if (hoverShipCollisions(hoverShipCoordinates)) {
+                return {};
+            } else if (hoverShipCoordinates.find(({ x, y }) => tableX === x && tableY === y)) {
+                return { ...tile, shipId: id, contains: SHIP_CONTAINS }
+            } else{
+                return tile
+            }
+        })
+    } else {
+
+    };
+
+    
 
     const updatedShipTempaltes = placeShipFromTemplate(shipTemplates, size);
 

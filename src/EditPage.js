@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 import { DIRECTION_DOWN, displayHoveredShip, hoverShipCoordinates, openAllTable, makeShip } from "./fieldManipulationContext"
 
-import { makeMenuState, makeDefaultMenuState, closeTileMenu, interactWithTileMenu, changeTileMenuPosition, openTileMenu, hoverShipHideTileMenu, nextMenuState, previousMenuState, setHoveredShip, CLOSED, OPENED, INTERACTING, HOVER_SHIP } from "./editTileMenu"
+import { makeMenuState, makeDefaultMenuState, closeTileMenu, interactWithTileMenu, changeTileMenuPosition, openTileMenu, hoverShipHideTileMenu, nextMenuState, previousMenuState, setHoveredShip, CLOSED, OPENED, INTERACTING, HOVER_SHIP, nullifyHoverTileCoordinates, setHoverTileCoordinates } from "./editTileMenu"
 
 const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 
@@ -17,9 +17,8 @@ function EditPage() {
   const { table, shipTemplates } = state;
 
   const [displayTable, setDisplayTable] = useState(openAllTable(table));
-  const [hoveredTileCoordinates, setHoveredTileCoordinates] = useState({ x: null, y: null });
   const [displayMenuState, setDisplayMenuState] = useState(makeDefaultMenuState());
-  const { menuState, order, size, direction } = displayMenuState;
+  const { menuState, order, size, direction, x, y } = displayMenuState;
 
   // Menu state API
   const closeTileMenuElement = () => {
@@ -63,20 +62,19 @@ function EditPage() {
   }
 
   const mouseEnterTileCallback = (_e, x, y) => {
-    setHoveredTileCoordinates({ x, y });
+    setDisplayMenuState(setHoverTileCoordinates(displayMenuState, x, y));
   }
 
   const pushTileCallback = (_e) => {
     if (menuState === HOVER_SHIP) {
-      const { order, size, direction } = displayMenuState;
-      const { x, y } = hoveredTileCoordinates;
+      const { order, size, direction, x, y } = displayMenuState;
       addShipOnTable(order, size, direction, x, y);
     }
     setDisplayMenuState(nextMenuState(displayMenuState));
   }
 
   const mouseLeaveFieldCallback = (e) => {
-    // closeTileMenuElement();
+    setDisplayMenuState(closeTileMenu(nullifyHoverTileCoordinates(displayMenuState)));
   }
 
   const selectedMenuElementCallback = (order, size) => {
@@ -88,12 +86,12 @@ function EditPage() {
     // table must not be in this callback variables
     // To avoid infinity loop
     if (menuState === HOVER_SHIP) {
-      const { x, y } = hoveredTileCoordinates;
+      const { x, y } = displayMenuState;
       displayHoveredShipOnTable(x, y, order, size, direction);
     } else {
       setDisplayTable(openAllTable(table));
     }
-  }, [menuState, hoveredTileCoordinates, order, size, direction]);
+  }, [menuState, order, size, direction, x, y]);
 
   return (
     <div className="App">
@@ -132,7 +130,7 @@ function EditPage() {
               {
                 shipTemplates.map(({ size, maxShips, shipsPlaced }) => {
                   const menuText = `Ship ${size}. ${maxShips}/${shipsPlaced}`;
-                  const allshipsPlaced = maxShips === shipsPlaced;
+                  const allshipsPlaced = maxShips <= shipsPlaced;
                   return (
                     <li 
                       key={size}
