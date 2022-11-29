@@ -77,7 +77,7 @@ const previousMenuState = (currentState) => {
     const { menuState } = currentState;
     const previousStepIndex = MENU_STATES.findIndex(stateConstant => stateConstant === menuState) - 1
     if (previousStepIndex === -1) {
-        return { ...currentState, menuState: MENU_STATES[MENU_STATES.length - 1] };
+        return currentState;
     } else {
         return { ...currentState, menuState: MENU_STATES[previousStepIndex] };
     }

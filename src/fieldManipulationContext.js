@@ -107,12 +107,20 @@ const shootTable = (table, x, y) => {
         if (tableX === x && tableY === y) {
             // Need to send shipId to some observer to display is ship still alive.
             const { contains } = tile;
-            const newContains = contains === SHIP_CONTAINS ? DEAD_SHIP_CONTAINS : MISS_SHOT_CONTAINS;
+            const newContains = getAfterShopContains(contains);
             return { ...tile, contains: newContains, opened: true };
         } else {
             return tile;
         }
     })
+}
+
+const getAfterShopContains = (contains) => {
+    if (contains === SHIP_CONTAINS || contains === DEAD_SHIP_CONTAINS) { 
+        return DEAD_SHIP_CONTAINS;
+    } else {
+        return MISS_SHOT_CONTAINS;
+    };
 }
 
 // Filters
@@ -141,6 +149,41 @@ const hoverShipCoordinates = (ship) => {
     }
 
     return shipMask;
+}
+
+const spaceAroundCoordinates = (ship) => {
+    const { hoverShipCoordinates } = ship;
+
+    let coordinates = [];
+
+    for (const { x, y } in hoverShipCoordinates) {
+        coordinates = coordinates.concat(aroundCoordinates(x, y));
+    }
+
+    return coordinates.filter((el) => { return !hoverShipCoordinates.includes(el)});
+}
+
+const uniqueArray = (arr) => {
+    return arr.filter((value, index, self) => {
+        return self.indexOf(value) === index;
+    })
+}
+
+const filterPositiveCoordinates = (arr) => {
+    return arr.filter(({ x, y }, index, self) => {
+        return (x > -1) && (y > -1);
+    })
+}
+
+const aroundCoordinates = (x, y) => {
+    let aroundCoordinates = [];
+
+    for (let i = -1; i <= 1; i++) {
+        for (let j = -1; j <= 1; j++) {
+            aroundCoordinates.push({ x: (x + i), y: (y + j)})
+        }
+    }
+    return filterPositiveCoordinates(uniqueArray(aroundCoordinates));
 }
 
 const displayHoveredShip = (table, hoveredShipCoordinates) => {
@@ -229,6 +272,7 @@ export {
     hoverShipCoordinates,
     displayHoveredShip,
     displayHoveredShipCollision,
+    spaceAroundCoordinates,
     makeDefaultField,
     createField,
     openAllTable,

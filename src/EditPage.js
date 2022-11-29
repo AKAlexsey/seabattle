@@ -1,11 +1,11 @@
 import './Battlefield.css';
 import Field from './Field';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import MenuElement from './MenuElement';
 import { useGlobalContext } from './context'
 import { Link } from "react-router-dom";
 
-import { DIRECTION_DOWN, displayHoveredShip, displayHoveredShipCollision, hoverShipCoordinates, openAllTable, makeShip } from "./fieldManipulationContext"
+import { DIRECTION_DOWN, displayHoveredShip, displayHoveredShipCollision, hoverShipCoordinates, spaceAroundCoordinates, openAllTable, makeShip } from "./fieldManipulationContext"
 
 import { makeDefaultMenuState, closeTileMenu, 
           interactWithTileMenu, changeTileMenuPosition, openTileMenu, 
@@ -48,6 +48,8 @@ function EditPage() {
   // Display table API
   const displayHoveredShipOnTable = (ship, collision) => {
     const hoveredSipCoordinates = hoverShipCoordinates(ship);
+
+    console.log(spaceAroundCoordinates(ship))
 
     const openedTable = openAllTable(table);
 
@@ -96,7 +98,13 @@ function EditPage() {
     setDisplayMenuState(hoverShipHideTileMenu(udpatedState));
   }
 
+  const escFunction = useCallback((event) => {
+    setDisplayMenuState(previousMenuState(displayMenuState))
+  }, []);
+
   useEffect(() => {
+    document.addEventListener("keydown", escFunction, false);
+
     // table must not be in this callback variables
     // To avoid infinity loop
     if (menuState === HOVER_SHIP) {
@@ -105,6 +113,9 @@ function EditPage() {
       displayHoveredShipOnTable(newShip, false);
     } else {
       setDisplayTable(openAllTable(table));
+      return () => {
+        document.removeEventListener("keydown", escFunction, false);
+      };
     }
   }, [menuState, order, size, direction, x, y]);
 
