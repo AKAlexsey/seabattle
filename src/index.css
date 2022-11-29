@@ -278,7 +278,6 @@ hr {
 
 .game-field {
   border-collapse: collapse;
-  /* float: center; */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -332,23 +331,11 @@ hr {
   }
   
   to {
-    background-color: white;
+    background-color: auto;
   }
 }
 
-/* .FoodConsumptionTable tr {
-    background-color: white;
-    animation: FadeIn 0.75s ease-in-out forwards;
-} */
-
 .game-field td.table_cell.show_collision {
-  /* background-image: url('https://charbase.com/images/glyph/183');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-color: white; */
-
-  background-color: white;
   animation: flickering 1.5s ease-in-out forwards;
 }
 

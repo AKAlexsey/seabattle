@@ -143,9 +143,9 @@ const hoverShipCoordinates = (ship) => {
     return shipMask;
 }
 
-const displayHoveredShip = (table, hoveredSipCoordinates) => {
+const displayHoveredShip = (table, hoveredShipCoordinates) => {
     return tableElementsMap(table, (tile, tableX, tableY) => {
-        if (hoveredSipCoordinates.find(({ x, y }) => x === tableX && y === tableY)) {
+        if (hoveredShipCoordinates.find(({ x, y }) => x === tableX && y === tableY)) {
             const { shipId } = tile;
             if (shipId !== null) {
                 return { ...tile, contains: OVERLAPSE_CONTAINS };
@@ -158,9 +158,9 @@ const displayHoveredShip = (table, hoveredSipCoordinates) => {
     })
 }
 
-const displayHoveredShipCollision = (table, hoveredSipCoordinates) => {
+const displayHoveredShipCollision = (table, hoveredShipCoordinates) => {
     return tableElementsMap(table, (tile, tableX, tableY) => {
-        if (hoveredSipCoordinates.find(({ x, y }) => x === tableX && y === tableY)) {
+        if (hoveredShipCoordinates.find(({ x, y }) => x === tableX && y === tableY)) {
             const { shipId } = tile;
             if (shipId !== null) {
                 return { ...tile, contains: OVERLAPSE_CONTAINS, collision: true };

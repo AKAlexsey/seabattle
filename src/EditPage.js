@@ -29,8 +29,8 @@ function EditPage() {
     setDisplayMenuState(closeTileMenu(displayMenuState));
   }
 
-  const moveTileMenuElement = (x, y) => {
-    setDisplayMenuState(changeTileMenuPosition(displayMenuState, x, y));
+  const moveTileMenuElement = (tileX, tileY) => {
+    setDisplayMenuState(changeTileMenuPosition(displayMenuState, tileX, tileY));
   }
 
   const openTileMenuElement = () => {
@@ -46,9 +46,7 @@ function EditPage() {
   // }
 
   // Display table API
-  const displayHoveredShipOnTable = ({order, size, direction, x, y}, collision) => {
-    const ship = makeShip(order, size, direction, x, y);
-
+  const displayHoveredShipOnTable = (ship, collision) => {
     const hoveredSipCoordinates = hoverShipCoordinates(ship);
 
     const openedTable = openAllTable(table);
@@ -79,7 +77,7 @@ function EditPage() {
       const newShip = makeShip(order, size, direction, x, y);
 
       if (noHoverShipCollision(newShip)) {
-        addShipOnTable(order, newShip);
+        addShipOnTable(newShip);
         setDisplayMenuState(nextMenuState(displayMenuState));
       } else {
         displayHoveredShipOnTable(newShip, true);
@@ -102,7 +100,7 @@ function EditPage() {
     // table must not be in this callback variables
     // To avoid infinity loop
     if (menuState === HOVER_SHIP) {
-      const { x, y } = displayMenuState;
+      const { order, size, direction, x, y } = displayMenuState;  
       const newShip = makeShip(order, size, direction, x, y);
       displayHoveredShipOnTable(newShip, false);
     } else {

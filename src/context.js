@@ -59,22 +59,20 @@ const AppProvider = ({ children }) => {
     }
 
     const noHoverShipCollision = (newShip) => {
-        const hoveredSipCoordinates = hoverShipCoordinates(newShip);
-
-        const { table, width, length } = state;
+        const { table, width, height } = state;
 
         const hoveredShipCoordinates = hoverShipCoordinates(newShip)
 
         const coordinatesOutOfField = hoveredShipCoordinates.find(({ x, y }) => {
-            x > (width - 1) || x < 0 || y > (height - 1) || y < 0
+            return (x > (width - 1)) || (x < 0) || (y > (height - 1)) || (y < 0);
         })
 
         if (coordinatesOutOfField) {
             return false;
         }
 
-        const shipsCollisionsCordinate = hoveredShipCoordinates.findIndex(({ x, y }) => {
-            const { contains } = table[x][y];
+        const shipsCollisionsCordinate = hoveredShipCoordinates.find(({ x, y }) => {
+            const { contains } = table[y][x];
 
             return (contains === SHIP_CONTAINS) || (contains === DEAD_SHIP_CONTAINS);
         })
