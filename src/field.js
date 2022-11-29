@@ -3,9 +3,11 @@ import { CLOSED_TILE_CLASS } from './fieldManipulationContext'
 const Field = (params) => {
     const { table, pushTileCallback, mouseEnterTileCallback, mouseMoveTileCallback, mouseLeaveFieldCallback } = params;
 
-    const getTileClass = ({ opened, contains }) => {
+    const getTileClass = ({ opened, contains, collision }) => {
         if (opened) {
-            return contains;
+            const collisionClass = collision?'show_collision':'';
+
+            return `${contains} ${collisionClass} table_cell`;
         } else {
             return CLOSED_TILE_CLASS;
         }

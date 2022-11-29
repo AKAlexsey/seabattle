@@ -1,6 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { addShip, hoverShip, createField, openAllTable, makeDefaultField, shootTable , DIRECTION_DOWN, DEFAULT_WIDTH, DEFAULT_HEIGHT, hoverShipCoordinates, 
-    displayHoveredShip}  from "./fieldManipulationContext"
+import { addShip, createField, makeDefaultField, shootTable , DIRECTION_DOWN, DEFAULT_WIDTH, DEFAULT_HEIGHT, hoverShipCoordinates, SHIP_CONTAINS, DEAD_SHIP_CONTAINS }  from "./fieldManipulationContext"
 
 const AppContext = React.createContext()
 
@@ -59,8 +58,32 @@ const AppProvider = ({ children }) => {
         setState({ ...state, ...newField });
     }
 
-    const addShipOnTable = (order, size, direction, x, y) => {
-        setState(addShip(state, order, size, direction, x, y))
+    const noHoverShipCollision = (newShip) => {
+        const hoveredSipCoordinates = hoverShipCoordinates(newShip);
+
+        const { table, width, length } = state;
+
+        const hoveredShipCoordinates = hoverShipCoordinates(newShip)
+
+        const coordinatesOutOfField = hoveredShipCoordinates.find(({ x, y }) => {
+            x > (width - 1) || x < 0 || y > (height - 1) || y < 0
+        })
+
+        if (coordinatesOutOfField) {
+            return false;
+        }
+
+        const shipsCollisionsCordinate = hoveredShipCoordinates.findIndex(({ x, y }) => {
+            const { contains } = table[x][y];
+
+            return (contains === SHIP_CONTAINS) || (contains === DEAD_SHIP_CONTAINS);
+        })
+
+        return (shipsCollisionsCordinate === undefined);
+    }
+
+    const addShipOnTable = (newShip) => {
+        setState(addShip(state, newShip))
     }
 
     const shootTableTile = (x, y) => {
@@ -78,6 +101,7 @@ const AppProvider = ({ children }) => {
             addShipOnTable, 
             shootTableTile, 
             doNothingFunction,
+            noHoverShipCollision
         }} >
             {children}
         </AppContext.Provider>

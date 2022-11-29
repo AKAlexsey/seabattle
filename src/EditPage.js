@@ -5,14 +5,18 @@ import MenuElement from './MenuElement';
 import { useGlobalContext } from './context'
 import { Link } from "react-router-dom";
 
-import { DIRECTION_DOWN, displayHoveredShip, hoverShipCoordinates, openAllTable, makeShip } from "./fieldManipulationContext"
+import { DIRECTION_DOWN, displayHoveredShip, displayHoveredShipCollision, hoverShipCoordinates, openAllTable, makeShip } from "./fieldManipulationContext"
 
-import { makeMenuState, makeDefaultMenuState, closeTileMenu, interactWithTileMenu, changeTileMenuPosition, openTileMenu, hoverShipHideTileMenu, nextMenuState, previousMenuState, setHoveredShip, CLOSED, OPENED, INTERACTING, HOVER_SHIP, nullifyHoverTileCoordinates, setHoverTileCoordinates } from "./editTileMenu"
+import { makeDefaultMenuState, closeTileMenu, 
+          interactWithTileMenu, changeTileMenuPosition, openTileMenu, 
+          hoverShipHideTileMenu, nextMenuState, previousMenuState, 
+          setHoveredShip, CLOSED, OPENED, HOVER_SHIP, 
+          nullifyHoverTileCoordinates, setHoverTileCoordinates } from "./editTileMenu"
 
 const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 
 function EditPage() {
-  const { state, generateField, addShipOnTable } = useGlobalContext()
+  const { state, generateField, addShipOnTable, noHoverShipCollision } = useGlobalContext()
 
   const { table, shipTemplates } = state;
 
@@ -42,14 +46,18 @@ function EditPage() {
   // }
 
   // Display table API
-  const displayHoveredShipOnTable = (hoveredShipX, hoveredShipY, order, size, direction = DIRECTION_DOWN) => {
-    const ship = makeShip(order, size, direction, hoveredShipX, hoveredShipY);
+  const displayHoveredShipOnTable = ({order, size, direction, x, y}, collision) => {
+    const ship = makeShip(order, size, direction, x, y);
 
     const hoveredSipCoordinates = hoverShipCoordinates(ship);
 
-    const newDisplayTableValue = displayHoveredShip(openAllTable(table), hoveredSipCoordinates);
+    const openedTable = openAllTable(table);
 
-    setDisplayTable(newDisplayTableValue);
+    if (collision) {
+      setDisplayTable(displayHoveredShipCollision(openedTable, hoveredSipCoordinates));
+    } else {
+      setDisplayTable(displayHoveredShip(openedTable, hoveredSipCoordinates));
+    }
   }
 
   // Callbacks
@@ -68,9 +76,17 @@ function EditPage() {
   const pushTileCallback = (_e) => {
     if (menuState === HOVER_SHIP) {
       const { order, size, direction, x, y } = displayMenuState;
-      addShipOnTable(order, size, direction, x, y);
+      const newShip = makeShip(order, size, direction, x, y);
+
+      if (noHoverShipCollision(newShip)) {
+        addShipOnTable(order, newShip);
+        setDisplayMenuState(nextMenuState(displayMenuState));
+      } else {
+        displayHoveredShipOnTable(newShip, true);
+      }
+    } else {
+      setDisplayMenuState(nextMenuState(displayMenuState));
     }
-    setDisplayMenuState(nextMenuState(displayMenuState));
   }
 
   const mouseLeaveFieldCallback = (e) => {
@@ -87,7 +103,8 @@ function EditPage() {
     // To avoid infinity loop
     if (menuState === HOVER_SHIP) {
       const { x, y } = displayMenuState;
-      displayHoveredShipOnTable(x, y, order, size, direction);
+      const newShip = makeShip(order, size, direction, x, y);
+      displayHoveredShipOnTable(newShip, false);
     } else {
       setDisplayTable(openAllTable(table));
     }

@@ -3,7 +3,7 @@ const MISS_SHOT_CONTAINS = 'miss_shot'
 const SHIP_CONTAINS = 'ship'
 const DEAD_SHIP_CONTAINS = 'dead_ship'
 const HOVERED_CONTAINS = 'hovered_ship'
-const HOVERED_COLLISION_CONTAINS = 'hovered_ship_collision'
+const HOVERED_COLLISION_CONTAINS = 'hovered_ship_collision' // probably not necessary
 const OVERLAPSE_CONTAINS = 'overlapse_ship'
 
 const CLOSED_TILE_CLASS = 'closed'
@@ -16,7 +16,7 @@ const DIRECTION_RIGHT = 'right';
 const DIRECTION_DOWN = 'down';
 const DIRECTION_LEFT = 'left';
 
-const emptyTile = { opened: false, contains: EMPTY_CONTAINS, shipId: null };
+const emptyTile = { opened: false, contains: EMPTY_CONTAINS, shipId: null, collision: false };
 const emptyField = {
     height: 0,
     width: 0,
@@ -65,9 +65,8 @@ const makeDefaultField = () => {
     return createField(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 }
 
-const addShip = (state, order, size, direction, positionX, positionY) => {
-    const newShip = makeShip(order, size, direction, positionX, positionY)
-    const { id, hoverShipCoordinates } = newShip
+const addShip = (state, newShip) => {
+    const { id, hoverShipCoordinates, size } = newShip
     const { table, ships, shipTemplates } = state;
 
     const updatedTable = tableElementsMap(table, (tile, tableX, tableY) => {
@@ -159,6 +158,21 @@ const displayHoveredShip = (table, hoveredSipCoordinates) => {
     })
 }
 
+const displayHoveredShipCollision = (table, hoveredSipCoordinates) => {
+    return tableElementsMap(table, (tile, tableX, tableY) => {
+        if (hoveredSipCoordinates.find(({ x, y }) => x === tableX && y === tableY)) {
+            const { shipId } = tile;
+            if (shipId !== null) {
+                return { ...tile, contains: OVERLAPSE_CONTAINS, collision: true };
+            } else {
+                return { ...tile, contains: HOVERED_CONTAINS, collision: true };
+            }
+        } else {
+            return tile;
+        }
+    })
+}
+
 const getDirectionIterator = (direction) => {
     switch (direction) {
         case DIRECTION_UP:
@@ -207,11 +221,6 @@ const ship = {
 
 const shipsList = [ship]
 
-const shipsCollection = [
-    ship,
-    ship
-]
-
 
 
 export {
@@ -219,6 +228,7 @@ export {
     makeShip,
     hoverShipCoordinates,
     displayHoveredShip,
+    displayHoveredShipCollision,
     makeDefaultField,
     createField,
     openAllTable,

@@ -292,23 +292,23 @@ hr {
 }
 
 .game-field td.closed {
-  background-color: grey !important;
+  background-color: grey;
 }
 
 .game-field td.empty {
-  background-color: white !important;
+  background-color: white;
 }
 
 .game-field td.ship {
-  background-color: green !important;
+  background-color: green;
 }
 
 .game-field td.hovered_ship {
-  background-color: lightgreen !important;
+  background-color: lightgreen;
 }
 
 .game-field td.overlapse_ship {
-  background-color: pink !important;
+  background-color: pink;
 }
 
 .game-field td.dead_ship {
@@ -324,6 +324,32 @@ hr {
   background-repeat: no-repeat;
   background-size: cover;
   background-color: white;
+}
+
+@keyframes flickering {
+  from {
+    background-color: rebeccapurple;
+  }
+  
+  to {
+    background-color: white;
+  }
+}
+
+/* .FoodConsumptionTable tr {
+    background-color: white;
+    animation: FadeIn 0.75s ease-in-out forwards;
+} */
+
+.game-field td.table_cell.show_collision {
+  /* background-image: url('https://charbase.com/images/glyph/183');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: white; */
+
+  background-color: white;
+  animation: flickering 1.5s ease-in-out forwards;
 }
 
 .manipulate_section {
