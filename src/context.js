@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { addShip, createField, makeDefaultField, shootTable, shootShip, hoverShipCoordinates, spaceAroundCoordinates, DEFAULT_WIDTH, DEFAULT_HEIGHT, SHIP_CONTAINS, DEAD_SHIP_CONTAINS }  from "./fieldManipulationContext"
+import { addShip, createField, makeDefaultField, shootTable, shootShip, hoverShipCoordinates, spaceAroundCoordinates, DEFAULT_WIDTH, DEFAULT_HEIGHT, SHIP_CONTAINS, DEAD_SHIP_CONTAINS } from "./fieldManipulationContext"
 
 const AppContext = React.createContext()
 
@@ -14,11 +14,11 @@ const makeDefaultState = () => {
 const geStateFromLocalStorage = () => {
     const seaBattleState = localStorage.getItem(LOCAL_STORAGE_NAME);
     if (seaBattleState) {
-      return JSON.parse(seaBattleState);
+        return JSON.parse(seaBattleState);
     } else {
-      return makeDefaultState();
+        return makeDefaultState();
     }
-  };
+};
 
 const AppProvider = ({ children }) => {
     const [state, setState] = useState(geStateFromLocalStorage());
@@ -77,9 +77,11 @@ const AppProvider = ({ children }) => {
             return (x < width) || (x >= 0) || (y < height) || (y >= 0);
         });
 
-        const allSpace = shipCoordinates.concat(aroundCoordinates);
+        let allCoordinates = shipCoordinates.concat(aroundCoordinates)
 
-        const shipsCollisionsCordinate = allSpace.find(({ x, y }) => {
+        allCoordinates = allCoordinates.filter(({ x, y }) => (x < width) && (x >= 0) && (y < height) && (y >= 0));
+
+        const shipsCollisionsCordinate = allCoordinates.find(({ x, y }) => {
             const { contains } = table[y][x];
 
             return (contains === SHIP_CONTAINS) || (contains === DEAD_SHIP_CONTAINS);
@@ -102,12 +104,12 @@ const AppProvider = ({ children }) => {
 
 
     return (
-        <AppContext.Provider value={{ 
-            state, 
-            openTile, 
-            generateField, 
-            addShipOnTable, 
-            shootTableTile, 
+        <AppContext.Provider value={{
+            state,
+            openTile,
+            generateField,
+            addShipOnTable,
+            shootTableTile,
             doNothingFunction,
             noHoverShipCollision
         }} >

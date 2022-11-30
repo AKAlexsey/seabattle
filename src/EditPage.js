@@ -150,15 +150,15 @@ function EditPage() {
       {
         <MenuElement displayMenuState={displayMenuState} hoverMenuCallback={interactWithTileMenuElement} >
           <article>
-            <ul>
+            <ul className='menu_list'>
               {
                 shipTemplates.map(({ size, maxShips, shipsPlaced }) => {
-                  const menuText = `Ship ${size}. ${maxShips}/${shipsPlaced}`;
+                  const menuText = `Ship ${size}. ${shipsPlaced} / ${maxShips}`;
                   const allshipsPlaced = maxShips <= shipsPlaced;
                   return (
                     <li 
                       key={size}
-                      className={allshipsPlaced ? 'all_ships_placed' : ''} 
+                      className={allshipsPlaced ? 'menu_element all_ships_placed' : 'menu_element'} 
                       onMouseDown={() => { return allshipsPlaced ? () => {} : selectedMenuElementCallback(shipsPlaced, size) }}
                     >
                       {menuText}

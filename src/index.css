@@ -365,8 +365,15 @@ hr {
   border: 1px solid black;
 }
 
+.menu_list li {
+  list-style: none;
+}
+
 .all_ships_placed {
   background-color: #2680c0;
+}
+
+.menu_element {
   font-weight: 700;
 }
 
