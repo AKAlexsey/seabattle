@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { addShip, createField, makeDefaultField, shootTable , DIRECTION_DOWN, DEFAULT_WIDTH, DEFAULT_HEIGHT, hoverShipCoordinates, SHIP_CONTAINS, DEAD_SHIP_CONTAINS }  from "./fieldManipulationContext"
+import { addShip, createField, makeDefaultField, shootTable, shootShip, hoverShipCoordinates, spaceAroundCoordinates, DEFAULT_WIDTH, DEFAULT_HEIGHT, SHIP_CONTAINS, DEAD_SHIP_CONTAINS }  from "./fieldManipulationContext"
 
 const AppContext = React.createContext()
 
@@ -61,9 +61,9 @@ const AppProvider = ({ children }) => {
     const noHoverShipCollision = (newShip) => {
         const { table, width, height } = state;
 
-        const hoveredShipCoordinates = hoverShipCoordinates(newShip)
+        const shipCoordinates = hoverShipCoordinates(newShip);
 
-        const coordinatesOutOfField = hoveredShipCoordinates.find(({ x, y }) => {
+        const coordinatesOutOfField = shipCoordinates.find(({ x, y }) => {
             return (x > (width - 1)) || (x < 0) || (y > (height - 1)) || (y < 0);
         })
 
@@ -71,7 +71,15 @@ const AppProvider = ({ children }) => {
             return false;
         }
 
-        const shipsCollisionsCordinate = hoveredShipCoordinates.find(({ x, y }) => {
+        let aroundCoordinates = spaceAroundCoordinates(newShip);
+
+        aroundCoordinates = aroundCoordinates.filter(({ x, y }) => {
+            return (x < width) || (x >= 0) || (y < height) || (y >= 0);
+        });
+
+        const allSpace = shipCoordinates.concat(aroundCoordinates);
+
+        const shipsCollisionsCordinate = allSpace.find(({ x, y }) => {
             const { contains } = table[y][x];
 
             return (contains === SHIP_CONTAINS) || (contains === DEAD_SHIP_CONTAINS);
@@ -85,9 +93,11 @@ const AppProvider = ({ children }) => {
     }
 
     const shootTableTile = (x, y) => {
-        const { table } = state;
-        const updatedTable = shootTable(table, x, y)
-        setState({ ...state, table: updatedTable })
+        const { table, ships } = state;
+        const { spaceAroundDeadShip, updatedShips } = shootShip(ships, table, x, y);
+        const updatedTable = shootTable(table, x, y, spaceAroundDeadShip);
+
+        setState({ ...state, table: updatedTable, ships: updatedShips })
     }
 
 

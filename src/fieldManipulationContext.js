@@ -40,7 +40,6 @@ const makeShip = (order, size, direction, positionX, positionY) => {
     return {
         id: `ID_${order}_${size}`,
         hoverShipCoordinates: hoverShipCoordinates({ size, direction, positionX, positionY }),
-        destructedCoordinates: [],
         size,
         positionX,
         positionY,
@@ -102,10 +101,11 @@ const tableElementsMap = (table, iterator) => {
     })
 }
 
-const shootTable = (table, x, y) => {
+const shootTable = (table, x, y, spaceAroundDeadShip) => {
+    const shootingCoordinates = spaceAroundDeadShip.concat({ x, y })
+
     return tableElementsMap(table, (tile, tableX, tableY) => {
-        if (tableX === x && tableY === y) {
-            // Need to send shipId to some observer to display is ship still alive.
+        if (shootingCoordinates.find(({ x, y }) => x === tableX && y === tableY )) {
             const { contains } = tile;
             const newContains = getAfterShopContains(contains);
             return { ...tile, contains: newContains, opened: true };
@@ -115,8 +115,47 @@ const shootTable = (table, x, y) => {
     })
 }
 
+// Awesome !!! single responsibility for table and ship
+const shootShip = (ships, table, shootX, shootY) => {
+    const { shipId } = table[shootY][shootX];
+
+    if (shipId === null) {
+        return { spaceAroundDeadShip: [], updatedShips: ships };
+    }
+
+    const ship = ships.find(({ id }) => id === shipId);
+    const { hoverShipCoordinates } = ship;
+
+    const updatedCoordinates = hoverShipCoordinates.map((coordinates) => {
+        const { x, y } = coordinates;
+
+        if (x === shootX && y === shootY) {
+            return { ...coordinates, alive: false }
+        } else {
+            return coordinates;
+        }
+    });
+
+    const currentAliveStatus = updatedCoordinates.every(({ alive }) => alive);
+
+    const updatedShips = ships.map((ship) => {
+        if (ship.id === shipId) {
+            return { ...ship, hoverShipCoordinates: updatedCoordinates, alive: currentAliveStatus };
+        } else {
+            return ship;
+        }
+    });
+
+    if (currentAliveStatus === false) {
+        const spaceAroundDeadShip = spaceAroundCoordinates(ship);
+        return { spaceAroundDeadShip, updatedShips };
+    } else {
+        return { spaceAroundDeadShip: [], updatedShips };
+    }
+};
+
 const getAfterShopContains = (contains) => {
-    if (contains === SHIP_CONTAINS || contains === DEAD_SHIP_CONTAINS) { 
+    if (contains === SHIP_CONTAINS || contains === DEAD_SHIP_CONTAINS) {
         return DEAD_SHIP_CONTAINS;
     } else {
         return MISS_SHOT_CONTAINS;
@@ -130,12 +169,6 @@ const openAllTable = (table) => {
     })
 }
 
-const displayHoverShip = (table, hover) => {
-    return tableElementsMap(table, (tile, _tableX, _tableY) => {
-        return { ...tile, contains: true }
-    })
-}
-
 const hoverShipCoordinates = (ship) => {
     const { positionX, positionY, direction, size } = ship;
     const directionIterator = getDirectionIterator(direction);
@@ -145,22 +178,24 @@ const hoverShipCoordinates = (ship) => {
     for (let i = 0; i < size - 1; i++) {
         const lastElement = shipMask[shipMask.length - 1];
         const newElement = directionIterator(lastElement);
-        shipMask.push(newElement);
+        shipMask.push({ ...newElement, alive: true });
     }
 
     return shipMask;
 }
 
 const spaceAroundCoordinates = (ship) => {
-    const { hoverShipCoordinates } = ship;
+    const hoveredShipCoordinates = hoverShipCoordinates(ship);
 
     let coordinates = [];
 
-    for (const { x, y } in hoverShipCoordinates) {
+    for (const { x, y } of hoveredShipCoordinates) {
         coordinates = coordinates.concat(aroundCoordinates(x, y));
     }
 
-    return coordinates.filter((el) => { return !hoverShipCoordinates.includes(el)});
+    coordinates = uniqueArray(coordinates);
+
+    return coordinates.filter((el) => { return !hoveredShipCoordinates.includes(el) });
 }
 
 const uniqueArray = (arr) => {
@@ -169,21 +204,16 @@ const uniqueArray = (arr) => {
     })
 }
 
-const filterPositiveCoordinates = (arr) => {
-    return arr.filter(({ x, y }, index, self) => {
-        return (x > -1) && (y > -1);
-    })
-}
-
 const aroundCoordinates = (x, y) => {
-    let aroundCoordinates = [];
+    let coordinates = [];
 
     for (let i = -1; i <= 1; i++) {
         for (let j = -1; j <= 1; j++) {
-            aroundCoordinates.push({ x: (x + i), y: (y + j)})
+            coordinates.push({ x: (x + i), y: (y + j) });
         }
     }
-    return filterPositiveCoordinates(uniqueArray(aroundCoordinates));
+
+    return coordinates;
 }
 
 const displayHoveredShip = (table, hoveredShipCoordinates) => {
@@ -240,31 +270,12 @@ const getDirectionIterator = (direction) => {
     };
 }
 
-const shipCellCoordinates = {
-    x: 1,
-    y: 1,
-    alive: [true, false]
-}
 
 // const shipTemplate = {
 //     size: [1 - 4],
 //     shipsCount: 1 - 4,
 //     shipsInstalled: 0-shipCount
 // }
-
-const ship = {
-    size: [1, 4],
-    id: "Id_1",
-    occupiedCells: [shipCellCoordinates, shipCellCoordinates],
-    positionX: [0 - DEFAULT_WIDTH],
-    positionY: [0 - DEFAULT_HEIGHT],
-    direction: ['top', 'right', 'down', 'left'],
-    alive: [true, false]
-}
-
-const shipsList = [ship]
-
-
 
 export {
     addShip,
@@ -277,6 +288,7 @@ export {
     createField,
     openAllTable,
     shootTable,
+    shootShip,
 
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,

@@ -5,7 +5,7 @@ import MenuElement from './MenuElement';
 import { useGlobalContext } from './context'
 import { Link } from "react-router-dom";
 
-import { DIRECTION_DOWN, displayHoveredShip, displayHoveredShipCollision, hoverShipCoordinates, spaceAroundCoordinates, openAllTable, makeShip } from "./fieldManipulationContext"
+import { DIRECTION_DOWN, displayHoveredShip, displayHoveredShipCollision, hoverShipCoordinates, openAllTable, makeShip } from "./fieldManipulationContext"
 
 import { makeDefaultMenuState, closeTileMenu, 
           interactWithTileMenu, changeTileMenuPosition, openTileMenu, 
@@ -47,16 +47,14 @@ function EditPage() {
 
   // Display table API
   const displayHoveredShipOnTable = (ship, collision) => {
-    const hoveredSipCoordinates = hoverShipCoordinates(ship);
-
-    console.log(spaceAroundCoordinates(ship))
+    const hoveredShipCoordinates = hoverShipCoordinates(ship);
 
     const openedTable = openAllTable(table);
 
     if (collision) {
-      setDisplayTable(displayHoveredShipCollision(openedTable, hoveredSipCoordinates));
+      setDisplayTable(displayHoveredShipCollision(openedTable, hoveredShipCoordinates));
     } else {
-      setDisplayTable(displayHoveredShip(openedTable, hoveredSipCoordinates));
+      setDisplayTable(displayHoveredShip(openedTable, hoveredShipCoordinates));
     }
   }
 
