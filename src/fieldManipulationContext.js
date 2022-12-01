@@ -136,17 +136,17 @@ const shootShip = (ships, table, shootX, shootY) => {
         }
     });
 
-    const currentAliveStatus = updatedCoordinates.every(({ alive }) => alive);
+    const isDead = updatedCoordinates.every(({ alive }) => !alive);
 
     const updatedShips = ships.map((ship) => {
         if (ship.id === shipId) {
-            return { ...ship, hoverShipCoordinates: updatedCoordinates, alive: currentAliveStatus };
+            return { ...ship, hoverShipCoordinates: updatedCoordinates, alive: !isDead };
         } else {
             return ship;
         }
     });
 
-    if (currentAliveStatus === false) {
+    if (isDead) {
         const spaceAroundDeadShip = spaceAroundCoordinates(ship);
         return { spaceAroundDeadShip, updatedShips };
     } else {
@@ -173,7 +173,7 @@ const hoverShipCoordinates = (ship) => {
     const { positionX, positionY, direction, size } = ship;
     const directionIterator = getDirectionIterator(direction);
 
-    let shipMask = [{ x: positionX, y: positionY }];
+    let shipMask = [{ x: positionX, y: positionY, alive: true }];
 
     for (let i = 0; i < size - 1; i++) {
         const lastElement = shipMask[shipMask.length - 1];
@@ -270,12 +270,11 @@ const getDirectionIterator = (direction) => {
     };
 }
 
-
-// const shipTemplate = {
-//     size: [1 - 4],
-//     shipsCount: 1 - 4,
-//     shipsInstalled: 0-shipCount
-// }
+const tableIsEmpty = (table) => {
+    return table.every((row) => {
+        return row.every(({ contains }) => contains === EMPTY_CONTAINS)
+    });
+};
 
 export {
     addShip,
@@ -289,6 +288,7 @@ export {
     openAllTable,
     shootTable,
     shootShip,
+    tableIsEmpty,
 
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,

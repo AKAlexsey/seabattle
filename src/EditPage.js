@@ -5,7 +5,7 @@ import MenuElement from './MenuElement';
 import { useGlobalContext } from './context'
 import { Link } from "react-router-dom";
 
-import { DIRECTION_DOWN, displayHoveredShip, displayHoveredShipCollision, hoverShipCoordinates, openAllTable, makeShip } from "./fieldManipulationContext"
+import { DIRECTION_DOWN, displayHoveredShip, displayHoveredShipCollision, hoverShipCoordinates, openAllTable, makeShip, tableIsEmpty } from "./fieldManipulationContext"
 
 import { makeDefaultMenuState, closeTileMenu, 
           interactWithTileMenu, changeTileMenuPosition, openTileMenu, 
@@ -116,6 +116,13 @@ function EditPage() {
       };
     }
   }, [menuState, order, size, direction, x, y]);
+
+  useEffect(() => {
+    // Very ineffective solution, but need to think later
+    if (tableIsEmpty(table)) {
+      setDisplayTable(openAllTable(table))
+    }
+  }, [table]);
 
   return (
     <div className="App">
