@@ -1,5 +1,5 @@
 import './Battlefield.css';
-import Field from './Field';
+import Field from './field';
 import { useState, useEffect, useCallback } from 'react';
 import MenuElement from './MenuElement';
 import { useGlobalContext } from './context'
@@ -18,7 +18,7 @@ import { makeDefaultMenuState, closeTileMenu,
 const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 
 // TODO
-// 3. ! Add ability to change direction of the ship using space key
+// 3. ! Add ab lity to change direction of the ship using space key
 // 4. Add drag and drop
 // 1. Fix bug with display collision // later
 // 2. Add ability to draw collision in space around

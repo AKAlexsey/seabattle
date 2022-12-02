@@ -1,5 +1,5 @@
 import './Battlefield.css';
-import Field from './Field';
+import Field from './field';
 
 import { useGlobalContext, doNothingFunction } from './context'
 
