@@ -88,13 +88,11 @@ const previousMenuState = (currentState) => {
 
 const changeHoverShipDirection = (currentState) => {
     const { menuState, direction } = currentState;
-    console.log({ menuState })
+
     if (menuState === HOVER_SHIP) {
         const nextDirection = nextShipDirection(direction);
-        console.log({ nextDirection, direction })
         return { ...currentState, direction: nextDirection };
     } else {
-        console.log('no change')
         return currentState;
     }
 }

@@ -1,8 +1,10 @@
 import './Battlefield.css';
 import Field from './field';
-import { useState, useEffect, useCallback } from 'react';
+
+import React from 'react';
+
 import MenuElement from './MenuElement';
-import { useGlobalContext } from './context'
+import { state, generateField, addShipOnTable, noHoverShipCollision } from './context'
 import { Link } from "react-router-dom";
 
 import { displayHoveredShip, displayHoveredShipCollision, 
@@ -23,172 +25,191 @@ const MENU_ELEMENT_MOUSE_DISTANCE = 3;
 // 1. Fix bug with display collision // later
 // 2. Add ability to draw collision in space around
 
-function EditPage() {
-  const { state, generateField, addShipOnTable, noHoverShipCollision } = useGlobalContext()
+class EditPage extends React.Component {
+  constructor(props) {
+    super(props);
 
-  const { table, shipTemplates } = state;
+    const { table } = state;
 
-  const [displayTable, setDisplayTable] = useState(openAllTable(table));
-  const [displayMenuState, setDisplayMenuState] = useState(makeDefaultMenuState());
-  const { menuState, order, size, direction, x, y } = displayMenuState;
+    // const { state, generateField, addShipOnTable, noHoverShipCollision } = useGlobalContext()
+
+    // const { table, shipTemplates } = state;
+  
+    const displayMenuState = makeDefaultMenuState();
+
+    this.state = {
+      // ...state,
+      // generateField,
+      // addShipOnTable,
+      // noHoverShipCollision,
+      // table,
+      // shipTemplates,
+      displayTable: openAllTable(table),
+      ...displayMenuState
+    }
+  }
+  
 
   // Menu state API
-  const moveTileMenuElement = (tileX, tileY) => {
-    setDisplayMenuState(changeTileMenuPosition(displayMenuState, tileX, tileY));
+  moveTileMenuElement(tileX, tileY) {
+    this.setState(changeTileMenuPosition(this.state, tileX, tileY));
   }
 
-  const openTileMenuElement = () => {
-    setDisplayMenuState(openTileMenu(displayMenuState));
+  openTileMenuElement() {
+    this.setState(openTileMenu(this.state));
   }
 
-  const interactWithTileMenuElement = () => {
-    setDisplayMenuState(interactWithTileMenu(displayMenuState));
+  interactWithTileMenuElement() {
+    this.setState(interactWithTileMenu(this.state));
   }
 
   // Display of collision should not be here. 
   // Seems that it cause problem with unable to display collision several times on one tile
-  const displayHoveredShipOnTable = (ship, collision) => {
+  displayHoveredShipOnTable(ship, collision) {
     const hoveredShipCoordinates = hoverShipCoordinates(ship);
 
-    const openedTable = openAllTable(table);
+    const openedTable = openAllTable(this.state.table);
 
     if (collision) {
-      setDisplayTable(displayHoveredShipCollision(openedTable, hoveredShipCoordinates));
+      this.setState({ ...this.state, ...displayHoveredShipCollision(openedTable, hoveredShipCoordinates) });
     } else {
-      setDisplayTable(displayHoveredShip(openedTable, hoveredShipCoordinates));
+      this.setState({ ...this.state, ...displayHoveredShip(openedTable, hoveredShipCoordinates) });
     }
   }
 
   // Callbacks
-  const mouseMoveTileCallback = (e) => {
-    if (menuState === OPENED || menuState === CLOSED) {
+  mouseMoveTileCallback(e) {
+    if (this.state.menuState === OPENED || this.state.menuState === CLOSED) {
       const positionX = e.pageX + MENU_ELEMENT_MOUSE_DISTANCE;
       const positionY = e.pageY + MENU_ELEMENT_MOUSE_DISTANCE;
-      moveTileMenuElement(positionX, positionY);
+      this.moveTileMenuElement(positionX, positionY);
     }
   }
 
-  const mouseEnterTileCallback = (_e, x, y) => {
-    setDisplayMenuState(setHoverTileCoordinates(displayMenuState, x, y));
+  mouseEnterTileCallback(_e, x, y) {
+    this.setState(setHoverTileCoordinates(this.state, x, y));
   }
 
-  const pushTileCallback = (_e) => {
-    if (menuState === HOVER_SHIP) {
-      const { order, size, direction, x, y } = displayMenuState;
+  pushTileCallback(_e) {
+    if (this.state.menuState === HOVER_SHIP) {
+      const { order, size, direction, x, y } = this.state;
       const newShip = makeShip(order, size, direction, x, y);
 
-      if (noHoverShipCollision(newShip)) {
-        addShipOnTable(newShip);
-        setDisplayMenuState(nextMenuState(displayMenuState));
+      if (this.noHoverShipCollision(newShip)) {
+        this.addShipOnTable(newShip);
+        this.setState(nextMenuState(this.state));
       } else {
-        displayHoveredShipOnTable(newShip, true);
+       this.displayHoveredShipOnTable(newShip, true);
       }
     } else {
-      setDisplayMenuState(nextMenuState(displayMenuState));
+      this.setState(nextMenuState(this.state));
     }
   }
 
-  const mouseLeaveFieldCallback = (e) => {
-    setDisplayMenuState(closeTileMenu(nullifyHoverTileCoordinates(displayMenuState)));
+  mouseLeaveFieldCallback(e) {
+    this.setState(closeTileMenu(nullifyHoverTileCoordinates(this.state)));
   }
 
-  const selectedMenuElementCallback = (order, size) => {
-    const udpatedState = setHoveredShip(displayMenuState, order, size);
-    setDisplayMenuState(hoverShipHideTileMenu(udpatedState));
+  selectedMenuElementCallback(order, size) {
+    const udpatedState = setHoveredShip(this.state, order, size);
+    this.setState(hoverShipHideTileMenu(udpatedState));
   }
 
-  const pushButtonCallback = useCallback((event) => {
+  pushButtonCallback(event) {
     if (event.code  === "Escape") {
-      setDisplayMenuState(previousMenuState(displayMenuState));
+      this.setState(previousMenuState(this.state));
     } else if (
       event.key === " " ||
       event.code === "Space" ||      
       event.keyCode === 32      
     ) {
-      setDisplayMenuState(changeHoverShipDirection(displayMenuState));
+      this.setState(changeHoverShipDirection(this.state));
     }
-  }, [direction, x, y]);
+  };
 
-  useEffect(() => {
-    document.addEventListener("keydown", pushButtonCallback, false);
+  componentDidMount(){
+    document.addEventListener("keydown", this.pushButtonCallback, false);
+  }
+  componentWillUnmount(){
+    document.removeEventListener("keydown", this.pushButtonCallback, false);
+  }
 
+  componentDidUpdate() {
     // table must not be in this callback variables
     // To avoid infinity loop
-    if (menuState === HOVER_SHIP) {
-      const { order, size, direction, x, y } = displayMenuState;  
-      const newShip = makeShip(order, size, direction, x, y);
-      displayHoveredShipOnTable(newShip, false);
-    } else {
-      setDisplayTable(openAllTable(table));
-      return () => {
-        document.removeEventListener("keydown", pushButtonCallback, false);
-      };
-    }
-  }, [menuState, order, size, direction, x, y]);
-
-  useEffect(() => {
-    // Very ineffective solution, but need to think later
+    const { table, menuState } = this.state;
     if (tableIsEmpty(table)) {
-      setDisplayTable(openAllTable(table))
+      this.setState({ ...this.state, table: openAllTable(table) });
     }
-  }, [table]);
 
-  return (
-    <div className="App">
-
-      <header className='edit_header'>
-        <span>
-          EditPage
-        </span>
-
-        <span>
-          <button className='btn remove-btn' onClick={() => { generateField() }}>Generate Field</button>
-        </span>
-        
-      </header>
+    if (menuState === HOVER_SHIP) {
+      const { order, size, direction, x, y } = this.state;  
+      const newShip = makeShip(order, size, direction, x, y);
+      this.displayHoveredShipOnTable(newShip, false);
+    } else {
+      this.setState({ ...this.state, table: openAllTable(table) });
+    }
+  }
 
 
+  render () {
+    return (
+      <div className="App">
 
-      <div className="bobard">
-        <Field
-          table={displayTable}
-          pushTileCallback={pushTileCallback}
-          mouseEnterTileCallback={mouseEnterTileCallback}
-          mouseMoveTileCallback={mouseMoveTileCallback}
-          mouseLeaveFieldCallback={mouseLeaveFieldCallback}
-        />
+        <header className='edit_header'>
+          <span>
+            EditPage
+          </span>
+
+          <span>
+            <button className='btn remove-btn' onClick={() => { this.state.generateField() }}>Generate Field</button>
+          </span>
+          
+        </header>
+
+
+
+        <div className="bobard">
+          <Field
+            table={this.state.displayTable}
+            pushTileCallback={this.pushTileCallback}
+            mouseEnterTileCallback={this.mouseEnterTileCallback}
+            mouseMoveTileCallback={this.mouseMoveTileCallback}
+            mouseLeaveFieldCallback={this.mouseLeaveFieldCallback}
+          />
+        </div>
+
+        <div className='manipulate_section'>
+          <Link className='btn clear-btn' to={`battlefield`}>To the Battlefield!!</Link>
+        </div>
+
+        {
+          <MenuElement displayMenuState={this.state} hoverMenuCallback={this.interactWithTileMenuElement} >
+            <article>
+              <ul className='menu_list'>
+                {
+                  this.shipTemplates.map(({ size, maxShips, shipsPlaced }) => {
+                    const menuText = `Ship ${size}. ${shipsPlaced} / ${maxShips}`;
+                    const allshipsPlaced = maxShips <= shipsPlaced;
+                    return (
+                      <li 
+                        key={size}
+                        className={allshipsPlaced ? 'menu_element all_ships_placed' : 'menu_element'} 
+                        onMouseDown={() => { return allshipsPlaced ? () => {} : this.selectedMenuElementCallback(shipsPlaced, size) }}
+                      >
+                        {menuText}
+                      </li>
+                    );
+                  })
+                }
+              </ul>
+            </article>
+          </MenuElement>
+        }
+
       </div>
-
-      <div className='manipulate_section'>
-        <Link className='btn clear-btn' to={`battlefield`}>To the Battlefield!!</Link>
-      </div>
-
-      {
-        <MenuElement displayMenuState={displayMenuState} hoverMenuCallback={interactWithTileMenuElement} >
-          <article>
-            <ul className='menu_list'>
-              {
-                shipTemplates.map(({ size, maxShips, shipsPlaced }) => {
-                  const menuText = `Ship ${size}. ${shipsPlaced} / ${maxShips}`;
-                  const allshipsPlaced = maxShips <= shipsPlaced;
-                  return (
-                    <li 
-                      key={size}
-                      className={allshipsPlaced ? 'menu_element all_ships_placed' : 'menu_element'} 
-                      onMouseDown={() => { return allshipsPlaced ? () => {} : selectedMenuElementCallback(shipsPlaced, size) }}
-                    >
-                      {menuText}
-                    </li>
-                  );
-                })
-              }
-            </ul>
-          </article>
-        </MenuElement>
-      }
-
-    </div>
-  );
+    )
+  }
 }
 
 export default EditPage;
