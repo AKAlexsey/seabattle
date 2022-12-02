@@ -1,3 +1,5 @@
+import { DIRECTION_DOWN, nextShipDirection } from './fieldManipulationContext.js'
+
 const CLOSED = 'tile_menu_closed'
 const OPENED = 'tile_menu_opened'
 const INTERACTING = 'tile_menu_interacting'
@@ -10,9 +12,10 @@ export {
     HOVER_SHIP
 }
 
+
 const makeMenuState = ({ menuState = CLOSED, positionX = 0, positionY = 0 }) => {
     return {
-        menuState: CLOSED,
+        menuState: HOVER_SHIP,
         positionX: 0,
         positionY: 0,
         size: 1,
@@ -47,7 +50,7 @@ const hoverShipHideTileMenu = (state) => {
     return { ...state, menuState: HOVER_SHIP };
 }
 
-const setHoveredShip = (state, order, size, direction = 'down') => {
+const setHoveredShip = (state, order, size, direction = DIRECTION_DOWN) => {
     return { ...state, order, size, direction };
 }
 
@@ -83,8 +86,21 @@ const previousMenuState = (currentState) => {
     }
 }
 
+const changeHoverShipDirection = (currentState) => {
+    const { menuState, direction } = currentState;
+    console.log({ menuState })
+    if (menuState === HOVER_SHIP) {
+        const nextDirection = nextShipDirection(direction);
+        console.log({ nextDirection, direction })
+        return { ...currentState, direction: nextDirection };
+    } else {
+        console.log('no change')
+        return currentState;
+    }
+}
+
 export { makeDefaultMenuState, makeMenuState, 
-    openTileMenu, closeTileMenu, 
-    interactWithTileMenu, changeTileMenuPosition, 
-    nextMenuState, previousMenuState, hoverShipHideTileMenu, 
-    setHoveredShip, nullifyHoverTileCoordinates, setHoverTileCoordinates }
+    openTileMenu, closeTileMenu, interactWithTileMenu, 
+    changeTileMenuPosition, nextMenuState, previousMenuState, 
+    hoverShipHideTileMenu, setHoveredShip, nullifyHoverTileCoordinates, 
+    setHoverTileCoordinates, changeHoverShipDirection }

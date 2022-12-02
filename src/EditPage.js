@@ -5,15 +5,23 @@ import MenuElement from './MenuElement';
 import { useGlobalContext } from './context'
 import { Link } from "react-router-dom";
 
-import { DIRECTION_DOWN, displayHoveredShip, displayHoveredShipCollision, hoverShipCoordinates, openAllTable, makeShip, tableIsEmpty } from "./fieldManipulationContext"
+import { displayHoveredShip, displayHoveredShipCollision, 
+         hoverShipCoordinates, openAllTable, makeShip, tableIsEmpty } from "./fieldManipulationContext"
 
 import { makeDefaultMenuState, closeTileMenu, 
           interactWithTileMenu, changeTileMenuPosition, openTileMenu, 
           hoverShipHideTileMenu, nextMenuState, previousMenuState, 
           setHoveredShip, CLOSED, OPENED, HOVER_SHIP, 
-          nullifyHoverTileCoordinates, setHoverTileCoordinates } from "./editTileMenu"
+          nullifyHoverTileCoordinates, setHoverTileCoordinates,
+          changeHoverShipDirection } from "./editTileMenu"
 
 const MENU_ELEMENT_MOUSE_DISTANCE = 3;
+
+// TODO
+// 3. ! Add ability to change direction of the ship using space key
+// 4. Add drag and drop
+// 1. Fix bug with display collision // later
+// 2. Add ability to draw collision in space around
 
 function EditPage() {
   const { state, generateField, addShipOnTable, noHoverShipCollision } = useGlobalContext()
@@ -25,10 +33,6 @@ function EditPage() {
   const { menuState, order, size, direction, x, y } = displayMenuState;
 
   // Menu state API
-  const closeTileMenuElement = () => {
-    setDisplayMenuState(closeTileMenu(displayMenuState));
-  }
-
   const moveTileMenuElement = (tileX, tileY) => {
     setDisplayMenuState(changeTileMenuPosition(displayMenuState, tileX, tileY));
   }
@@ -41,11 +45,8 @@ function EditPage() {
     setDisplayMenuState(interactWithTileMenu(displayMenuState));
   }
 
-  // const toggleDisplayHoverShip = () => {
-  //   setDisplayHoverShip(!hoverShip)
-  // }
-
-  // Display table API
+  // Display of collision should not be here. 
+  // Seems that it cause problem with unable to display collision several times on one tile
   const displayHoveredShipOnTable = (ship, collision) => {
     const hoveredShipCoordinates = hoverShipCoordinates(ship);
 
@@ -96,12 +97,20 @@ function EditPage() {
     setDisplayMenuState(hoverShipHideTileMenu(udpatedState));
   }
 
-  const escFunction = useCallback((event) => {
-    setDisplayMenuState(previousMenuState(displayMenuState))
-  }, []);
+  const pushButtonCallback = useCallback((event) => {
+    if (event.code  === "Escape") {
+      setDisplayMenuState(previousMenuState(displayMenuState));
+    } else if (
+      event.key === " " ||
+      event.code === "Space" ||      
+      event.keyCode === 32      
+    ) {
+      setDisplayMenuState(changeHoverShipDirection(displayMenuState));
+    }
+  }, [direction, x, y]);
 
   useEffect(() => {
-    document.addEventListener("keydown", escFunction, false);
+    document.addEventListener("keydown", pushButtonCallback, false);
 
     // table must not be in this callback variables
     // To avoid infinity loop
@@ -112,7 +121,7 @@ function EditPage() {
     } else {
       setDisplayTable(openAllTable(table));
       return () => {
-        document.removeEventListener("keydown", escFunction, false);
+        document.removeEventListener("keydown", pushButtonCallback, false);
       };
     }
   }, [menuState, order, size, direction, x, y]);

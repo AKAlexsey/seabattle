@@ -16,6 +16,22 @@ const DIRECTION_RIGHT = 'right';
 const DIRECTION_DOWN = 'down';
 const DIRECTION_LEFT = 'left';
 
+const SHIP_DIRECTIONS = [
+    DIRECTION_UP,
+    DIRECTION_RIGHT,
+    DIRECTION_DOWN,
+    DIRECTION_LEFT,
+];
+
+const nextShipDirection = (direction) => {
+    const nextDirectionIndex = SHIP_DIRECTIONS.findIndex(shipDirection => shipDirection === direction) + 1
+    if (nextDirectionIndex === SHIP_DIRECTIONS.length) {
+        return SHIP_DIRECTIONS[0];
+    } else {
+        return SHIP_DIRECTIONS[nextDirectionIndex];
+    }
+};
+
 const emptyTile = { opened: false, contains: EMPTY_CONTAINS, shipId: null, collision: false };
 const emptyField = {
     height: 0,
@@ -289,6 +305,7 @@ export {
     shootTable,
     shootShip,
     tableIsEmpty,
+    nextShipDirection,
 
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
