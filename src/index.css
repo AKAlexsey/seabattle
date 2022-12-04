@@ -306,6 +306,14 @@ hr {
   background-color: lightgreen;
 }
 
+.game-field td.dragging_ship {
+  background-color: blue;
+}
+
+.game-field td.drag_ship {
+  background-color: darkblue;
+}
+
 .game-field td.overlapse_ship {
   background-color: pink;
 }

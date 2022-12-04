@@ -15,14 +15,16 @@ export {
 
 const makeMenuState = ({ menuState = CLOSED, positionX = 0, positionY = 0 }) => {
     return {
-        menuState: HOVER_SHIP,
+        menuState: CLOSED,
         positionX: 0,
         positionY: 0,
         size: 1,
         order: 1,
         direction: 'down',
         x: null, 
-        y: null
+        y: null,
+        dragingShip: false,
+        dragShipId: null
     };
 }
 
@@ -62,6 +64,14 @@ const nullifyHoverTileCoordinates = (state) => {
     return { ...state, x: null, y: null };
 }
 
+const startShipDraging = (state, dragShipId, tileX, tileY) => {
+    return { ...state, dragShipId, x: tileX, y: tileY, dragingShip: true };
+}
+
+const stopShipDraging = (state) => {
+    return { ...state, dragShipId: null, dragingShip: false };
+}
+
 // Probably not necessary
 
 const MENU_STATES = [CLOSED, OPENED, INTERACTING, HOVER_SHIP]
@@ -88,13 +98,12 @@ const previousMenuState = (currentState) => {
 
 const changeHoverShipDirection = (currentState) => {
     const { menuState, direction } = currentState;
-    console.log({ menuState })
+
     if (menuState === HOVER_SHIP) {
         const nextDirection = nextShipDirection(direction);
-        console.log({ nextDirection, direction })
+
         return { ...currentState, direction: nextDirection };
     } else {
-        console.log('no change')
         return currentState;
     }
 }
@@ -103,4 +112,5 @@ export { makeDefaultMenuState, makeMenuState,
     openTileMenu, closeTileMenu, interactWithTileMenu, 
     changeTileMenuPosition, nextMenuState, previousMenuState, 
     hoverShipHideTileMenu, setHoveredShip, nullifyHoverTileCoordinates, 
-    setHoverTileCoordinates, changeHoverShipDirection }
+    setHoverTileCoordinates, changeHoverShipDirection,
+    startShipDraging, stopShipDraging }

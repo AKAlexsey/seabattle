@@ -1,7 +1,17 @@
 import { CLOSED_TILE_CLASS } from './fieldManipulationContext'
 
+import { setEmptyFunctionIfUndefined } from './context'
+
 const Field = (params) => {
-    const { table, pushTileCallback, mouseEnterTileCallback, mouseMoveTileCallback, mouseLeaveFieldCallback } = params;
+    const { table, clickTileCallback, mouseDownTileCallback, 
+            mouseUpTileCallback, mouseEnterTileCallback, 
+            mouseMoveTileCallback, mouseLeaveFieldCallback } = params;
+
+    const tileClickFunction = setEmptyFunctionIfUndefined(clickTileCallback);
+    const tileMouseDownFunction = setEmptyFunctionIfUndefined(mouseDownTileCallback);
+    const tileMouseUpFunction = setEmptyFunctionIfUndefined(mouseUpTileCallback);
+    const tileMouseEnterFunction = setEmptyFunctionIfUndefined(mouseEnterTileCallback);
+    const tileMouseMoveFunction = setEmptyFunctionIfUndefined(mouseMoveTileCallback);
 
     const getTileClass = ({ opened, contains, collision }) => {
         if (opened) {
@@ -26,11 +36,14 @@ const Field = (params) => {
                                     <td
                                         key={x}
                                         className={tileClass}
-                                        onClick={() => pushTileCallback(x, y)}
-                                        onMouseEnter={(e) => mouseEnterTileCallback(e, x, y)}
-                                        onMouseMove={mouseMoveTileCallback}
-                                    >
+                                        onClick={(e) => tileClickFunction(e, x, y)}
+                                        onMouseMove={(e) => tileMouseMoveFunction(e, x, y)}
+                                        onMouseEnter={(e) => tileMouseEnterFunction(e, x, y)}
+                                        onMouseDown={(e) => tileMouseDownFunction(e, x, y)}
+                                        onMouseUp={(e) => tileMouseUpFunction(e, x, y)}
 
+                                    >
+                                        {cell.shipId}
                                     </td>
                                 )
                             })}

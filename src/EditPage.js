@@ -5,32 +5,53 @@ import MenuElement from './MenuElement';
 import { useGlobalContext } from './context'
 import { Link } from "react-router-dom";
 
-import { displayHoveredShip, displayHoveredShipCollision, 
-         hoverShipCoordinates, openAllTable, makeShip, tableIsEmpty } from "./fieldManipulationContext"
+import {
+  displayHoveredShip, displayHoveredShipCollision,
+  hoverShipCoordinates, openAllTable, makeShip,
+  tableIsEmpty, getTileShipId, displayDragShip
+} from "./fieldManipulationContext"
 
-import { makeDefaultMenuState, closeTileMenu, 
-          interactWithTileMenu, changeTileMenuPosition, openTileMenu, 
-          hoverShipHideTileMenu, nextMenuState, previousMenuState, 
-          setHoveredShip, CLOSED, OPENED, HOVER_SHIP, 
-          nullifyHoverTileCoordinates, setHoverTileCoordinates,
-          changeHoverShipDirection } from "./editTileMenu"
+import {
+  makeDefaultMenuState, closeTileMenu,
+  interactWithTileMenu, changeTileMenuPosition, openTileMenu,
+  hoverShipHideTileMenu, nextMenuState, previousMenuState,
+  setHoveredShip, CLOSED, OPENED, HOVER_SHIP,
+  nullifyHoverTileCoordinates, setHoverTileCoordinates,
+  changeHoverShipDirection, startShipDraging, stopShipDraging
+} from "./editTileMenu"
 
-const MENU_ELEMENT_MOUSE_DISTANCE = 3;
+const MENU_ELEMENT_MOUSE_DISTANCE = 15;
 
 // TODO
-// 3. ! Add ability to change direction of the ship using space key
 // 4. Add drag and drop
 // 1. Fix bug with display collision // later
 // 2. Add ability to draw collision in space around
 
-function EditPage() {
-  const { state, generateField, addShipOnTable, noHoverShipCollision } = useGlobalContext()
+const getDragShip = (displayMenuState, ships, x, y) => {
+  const { dragingShip, dragShipId } = displayMenuState;
 
-  const { table, shipTemplates } = state;
+  if (dragingShip) {
+    const draggedShip = ships.find(({ id }) => id === dragShipId);
+
+    if (draggedShip) {
+      const { order, size, direction } = draggedShip;
+      return makeShip(order, size, direction, x, y);
+    } else {
+      return null;
+    }
+  } else {
+    return null;
+  }
+}
+
+function EditPage() {
+  const { state, generateField, addShipOnTable, moveShipOnTable, noHoverShipCollision } = useGlobalContext()
+
+  const { table, shipTemplates, ships } = state;
 
   const [displayTable, setDisplayTable] = useState(openAllTable(table));
   const [displayMenuState, setDisplayMenuState] = useState(makeDefaultMenuState());
-  const { menuState, order, size, direction, x, y } = displayMenuState;
+  const { menuState, order, size, direction, x, y, dragingShip, dragShipId } = displayMenuState;
 
   // Menu state API
   const moveTileMenuElement = (tileX, tileY) => {
@@ -59,8 +80,17 @@ function EditPage() {
     }
   }
 
+  const displayDraggedShipOnTable = (dragShip) => {
+    console.log('displayDraggedShipOnTable');
+    console.log(Date.now());
+    console.log({ dragShip });
+    const openedTable = openAllTable(table);
+
+    setDisplayTable(displayDragShip(openedTable, dragShip));
+  }
+
   // Callbacks
-  const mouseMoveTileCallback = (e) => {
+  const mouseMoveTileCallback = (e, _x, _y) => {
     if (menuState === OPENED || menuState === CLOSED) {
       const positionX = e.pageX + MENU_ELEMENT_MOUSE_DISTANCE;
       const positionY = e.pageY + MENU_ELEMENT_MOUSE_DISTANCE;
@@ -68,23 +98,39 @@ function EditPage() {
     }
   }
 
-  const mouseEnterTileCallback = (_e, x, y) => {
-    setDisplayMenuState(setHoverTileCoordinates(displayMenuState, x, y));
-  }
+  const mouseEnterTileCallback = useCallback((_e, tileX, tileY) => {
+    const { x, y } = displayMenuState;
+    console.log(`'mouseEnterTileCallback x: ${x} y: ${y}`)
+    setDisplayMenuState(setHoverTileCoordinates(displayMenuState, tileX, tileY));
+  }, [x, y])
 
-  const pushTileCallback = (_e) => {
+  const clickTileCallback = (_e, tileX, tileY) => {
+    const { menuState, order, size, direction, x, y } = displayMenuState;
+    const { table } = state;
+    const tileShipId = getTileShipId(table, tileX, tileY);
+
+
     if (menuState === HOVER_SHIP) {
-      const { order, size, direction, x, y } = displayMenuState;
       const newShip = makeShip(order, size, direction, x, y);
 
       if (noHoverShipCollision(newShip)) {
         addShipOnTable(newShip);
-        setDisplayMenuState(nextMenuState(displayMenuState));
+        setDisplayMenuState(closeTileMenu(displayMenuState));
       } else {
         displayHoveredShipOnTable(newShip, true);
       }
+    } else if (tileShipId) {
+      setDisplayMenuState(startShipDraging(displayMenuState, tileShipId, tileX, tileY))
     } else {
-      setDisplayMenuState(nextMenuState(displayMenuState));
+      const { ships } = state;
+      const dragShip = getDragShip(displayMenuState, ships, tileX, tileY);
+
+      if (dragShip && noHoverShipCollision(dragShip)) {
+        moveShipOnTable(dragShip);
+        setDisplayMenuState(stopShipDraging(displayMenuState));
+      } else {
+        setDisplayMenuState(nextMenuState(displayMenuState));
+      }
     }
   }
 
@@ -98,33 +144,39 @@ function EditPage() {
   }
 
   const pushButtonCallback = useCallback((event) => {
-    if (event.code  === "Escape") {
-      setDisplayMenuState(previousMenuState(displayMenuState));
+    if (event.code === "Escape") {
+      setDisplayMenuState(previousMenuState(stopShipDraging(displayMenuState)));
     } else if (
       event.key === " " ||
-      event.code === "Space" ||      
-      event.keyCode === 32      
+      event.code === "Space" ||
+      event.keyCode === 32
     ) {
       setDisplayMenuState(changeHoverShipDirection(displayMenuState));
     }
-  }, [direction, x, y]);
+  }, [menuState, direction, x, y, dragingShip]);
 
   useEffect(() => {
+    const { x, y } = displayMenuState;
+    console.log({ x, y })
     document.addEventListener("keydown", pushButtonCallback, false);
+    const dragShip = getDragShip(displayMenuState, ships);
 
     // table must not be in this callback variables
     // To avoid infinity loop
     if (menuState === HOVER_SHIP) {
-      const { order, size, direction, x, y } = displayMenuState;  
+      const { order, size, direction, x, y } = displayMenuState;
       const newShip = makeShip(order, size, direction, x, y);
       displayHoveredShipOnTable(newShip, false);
+    } else if (dragShip) {
+      displayDraggedShipOnTable(dragShip);
     } else {
       setDisplayTable(openAllTable(table));
-      return () => {
-        document.removeEventListener("keydown", pushButtonCallback, false);
-      };
     }
-  }, [menuState, order, size, direction, x, y]);
+
+    return () => {
+      document.removeEventListener("keydown", pushButtonCallback, false);
+    };
+  }, [menuState, order, size, direction, x, y, ships, dragingShip]);
 
   useEffect(() => {
     // Very ineffective solution, but need to think later
@@ -144,7 +196,7 @@ function EditPage() {
         <span>
           <button className='btn remove-btn' onClick={() => { generateField() }}>Generate Field</button>
         </span>
-        
+
       </header>
 
 
@@ -152,7 +204,7 @@ function EditPage() {
       <div className="bobard">
         <Field
           table={displayTable}
-          pushTileCallback={pushTileCallback}
+          clickTileCallback={clickTileCallback}
           mouseEnterTileCallback={mouseEnterTileCallback}
           mouseMoveTileCallback={mouseMoveTileCallback}
           mouseLeaveFieldCallback={mouseLeaveFieldCallback}
@@ -172,10 +224,10 @@ function EditPage() {
                   const menuText = `Ship ${size}. ${shipsPlaced} / ${maxShips}`;
                   const allshipsPlaced = maxShips <= shipsPlaced;
                   return (
-                    <li 
+                    <li
                       key={size}
-                      className={allshipsPlaced ? 'menu_element all_ships_placed' : 'menu_element'} 
-                      onMouseDown={() => { return allshipsPlaced ? () => {} : selectedMenuElementCallback(shipsPlaced, size) }}
+                      className={allshipsPlaced ? 'menu_element all_ships_placed' : 'menu_element'}
+                      onMouseDown={() => { return allshipsPlaced ? () => { } : selectedMenuElementCallback(shipsPlaced, size) }}
                     >
                       {menuText}
                     </li>

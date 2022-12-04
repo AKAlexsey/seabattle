@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { addShip, createField, makeDefaultField, shootTable, shootShip, hoverShipCoordinates, spaceAroundCoordinates, DEFAULT_WIDTH, DEFAULT_HEIGHT, SHIP_CONTAINS, DEAD_SHIP_CONTAINS } from "./fieldManipulationContext"
+import { addShip, moveShip, createField, makeDefaultField, shootTable, shootShip, hoverShipCoordinates, spaceAroundCoordinates, DEFAULT_WIDTH, DEFAULT_HEIGHT, SHIP_CONTAINS, DEAD_SHIP_CONTAINS } from "./fieldManipulationContext"
 
 const AppContext = React.createContext()
 
@@ -91,10 +91,14 @@ const AppProvider = ({ children }) => {
     }
 
     const addShipOnTable = (newShip) => {
-        setState(addShip(state, newShip))
+        setState(addShip(state, newShip));
     }
 
-    const shootTableTile = (x, y) => {
+    const moveShipOnTable = (movedShip) => {
+        setState(moveShip(state, movedShip));
+    }
+
+    const shootTableTile = (_e, x, y) => {
         const { table, ships } = state;
         const { spaceAroundDeadShip, updatedShips } = shootShip(ships, table, x, y);
         const updatedTable = shootTable(table, x, y, spaceAroundDeadShip);
@@ -109,6 +113,7 @@ const AppProvider = ({ children }) => {
             openTile,
             generateField,
             addShipOnTable,
+            moveShipOnTable,
             shootTableTile,
             doNothingFunction,
             noHoverShipCollision
@@ -124,4 +129,12 @@ const useGlobalContext = () => {
 
 const doNothingFunction = (value) => value;
 
-export { AppContext, AppProvider, useGlobalContext, doNothingFunction }
+const setEmptyFunctionIfUndefined = (func) => {
+    if (func !== undefined) {
+        return func;
+    } else {
+        return doNothingFunction;
+    }
+};
+
+export { AppContext, AppProvider, useGlobalContext, doNothingFunction, setEmptyFunctionIfUndefined }

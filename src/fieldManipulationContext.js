@@ -1,3 +1,5 @@
+import { toBePartiallyChecked } from "@testing-library/jest-dom/dist/matchers"
+
 const EMPTY_CONTAINS = 'empty'
 const MISS_SHOT_CONTAINS = 'miss_shot'
 const SHIP_CONTAINS = 'ship'
@@ -5,6 +7,10 @@ const DEAD_SHIP_CONTAINS = 'dead_ship'
 const HOVERED_CONTAINS = 'hovered_ship'
 const HOVERED_COLLISION_CONTAINS = 'hovered_ship_collision' // probably not necessary
 const OVERLAPSE_CONTAINS = 'overlapse_ship'
+const SPACE_AROUND_CONTAINS = 'space_around_ship'
+const SPACE_AROUND_CONFLICT_CONTAINS = 'space_around_conflict_ship'
+const DRAGGING_SHIP_CONTAINS = 'dragging_ship'
+const DRAG_SHIP_CONTAINS = 'drag_ship'
 
 const CLOSED_TILE_CLASS = 'closed'
 
@@ -60,7 +66,8 @@ const makeShip = (order, size, direction, positionX, positionY) => {
         positionX,
         positionY,
         direction,
-        alive: true
+        alive: true,
+        order: order
     }
 }
 
@@ -105,6 +112,41 @@ const placeShipFromTemplate = (shipTempaltes, addedShipSize) => {
         } else {
             return shipTemplate;
         }
+    })
+}
+
+const moveShip = (state, movedShip) => {
+    const { id, hoverShipCoordinates, size } = movedShip
+    const { table, ships } = state;
+
+    const updatedTable = tableElementsMap(table, (tile, tableX, tableY) => {
+        if (hoverShipCoordinates.find(({ x, y }) => tableX === x && tableY === y)) {
+            return { ...tile, shipId: id, contains: SHIP_CONTAINS }
+        } else {
+            const { shipId } = tile;
+
+            if (shipId === id) {
+                return { ...tile, shipId: null, contains: EMPTY_CONTAINS };
+            } else {
+                return tile;
+            }
+        }
+    })
+
+    const updatedShips = updateMovedShipInShips(movedShip, ships);
+
+    return { ...state, table: updatedTable, ships: updatedShips }
+}
+
+
+const updateMovedShipInShips = (movedShip, ships) => {
+    return ships.map((ship) => {
+        if (ship.id === movedShip.id) {
+            return movedShip;
+        } else {
+            return ship;
+        }
+
     })
 }
 
@@ -247,6 +289,24 @@ const displayHoveredShip = (table, hoveredShipCoordinates) => {
     })
 }
 
+const displayDragShip = (table, dragShip) => {
+    const { id, hoverShipCoordinates } = dragShip;
+
+    return tableElementsMap(table, (tile, tableX, tableY) => {
+        if (hoverShipCoordinates.find(({ x, y }) => tableX === x && tableY === y)) {
+            return { ...tile, shipId: id, contains: DRAG_SHIP_CONTAINS }
+        } else {
+            const { shipId } = tile;
+
+            if (shipId === id) {
+                return { ...tile, shipId: null, contains: DRAGGING_SHIP_CONTAINS };
+            } else {
+                return tile;
+            }
+        }
+    });
+}
+
 const displayHoveredShipCollision = (table, hoveredShipCoordinates) => {
     return tableElementsMap(table, (tile, tableX, tableY) => {
         if (hoveredShipCoordinates.find(({ x, y }) => x === tableX && y === tableY)) {
@@ -292,11 +352,25 @@ const tableIsEmpty = (table) => {
     });
 };
 
+const getTileShipId = (table, tableX, tableY) => {
+    if (tableX && tableY) {
+        return table[tableY][tableX].shipId;
+    } else {
+        return null;
+    }
+};
+
+const findShipById = (shipId, ships) => {
+    return ships.find(({ id }) => id === shipId);
+};
+
 export {
     addShip,
+    moveShip,
     makeShip,
     hoverShipCoordinates,
     displayHoveredShip,
+    displayDragShip,
     displayHoveredShipCollision,
     spaceAroundCoordinates,
     makeDefaultField,
@@ -305,6 +379,8 @@ export {
     shootTable,
     shootShip,
     tableIsEmpty,
+    getTileShipId,
+    findShipById,
     nextShipDirection,
 
     DEFAULT_WIDTH,

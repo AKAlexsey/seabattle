@@ -1,7 +1,7 @@
 import './Battlefield.css';
 import Field from './Field';
 
-import { useGlobalContext, doNothingFunction } from './context'
+import { useGlobalContext } from './context'
 
 import { Link } from "react-router-dom";
 
@@ -19,10 +19,7 @@ function Battlefield() {
       <div className="bobard">
         <Field 
           table={table}
-          pushTileCallback={shootTableTile}
-          mouseEnterTileCallback={doNothingFunction}
-          mouseLeaveTileCallback={doNothingFunction}
-          tableFiltrationFunction={doNothingFunction}
+          clickTileCallback={shootTableTile}
         />
       </div>
 
