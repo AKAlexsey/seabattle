@@ -1,5 +1,18 @@
-import React, { useState, useContext, useEffect } from 'react'
-import { addShip, createField, makeDefaultField, shootTable, shootShip, hoverShipCoordinates, spaceAroundCoordinates, DEFAULT_WIDTH, DEFAULT_HEIGHT, SHIP_CONTAINS, DEAD_SHIP_CONTAINS } from "./fieldManipulationContext"
+import React, {useState, useContext, useEffect} from 'react'
+import {
+    addShip,
+    moveShip,
+    createField,
+    makeDefaultField,
+    shootTable,
+    shootShip,
+    hoverShipCoordinates,
+    spaceAroundCoordinates,
+    DEFAULT_WIDTH,
+    DEFAULT_HEIGHT,
+    SHIP_CONTAINS,
+    DEAD_SHIP_CONTAINS
+} from "./fieldManipulationContext"
 
 const AppContext = React.createContext()
 
@@ -8,7 +21,7 @@ const LOCAL_STORAGE_NAME = 'seaBattle';
 const makeDefaultState = () => {
     const defaultField = makeDefaultField();
 
-    return { ...defaultField };
+    return {...defaultField};
 }
 
 const geStateFromLocalStorage = () => {
@@ -20,7 +33,7 @@ const geStateFromLocalStorage = () => {
     }
 };
 
-const AppProvider = ({ children }) => {
+const AppProvider = ({children}) => {
     const [state, setState] = useState(geStateFromLocalStorage());
 
     useEffect(() => {
@@ -28,7 +41,7 @@ const AppProvider = ({ children }) => {
     }, [state]);
 
     const openTile = (x, y) => {
-        const { width, height, table } = state;
+        const {width, height, table} = state;
 
         if (x < 0 || x >= width) {
             console.log(`X is invalid ${x} ${y}`)
@@ -43,27 +56,27 @@ const AppProvider = ({ children }) => {
         const newTable = table.map((row, tileY) => {
             if (tileY === y) {
                 return row.map((tile, tileX) => {
-                    return (tileX === x) ? { ...tile, opened: true } : tile
+                    return (tileX === x) ? {...tile, opened: true} : tile
                 })
             } else {
                 return row;
             }
         })
-        setState({ ...state, table: newTable })
+        setState({...state, table: newTable})
     }
 
     const generateField = (width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT) => {
         const newField = createField(width, height);
 
-        setState({ ...state, ...newField });
+        setState({...state, ...newField});
     }
 
     const noHoverShipCollision = (newShip) => {
-        const { table, width, height } = state;
+        const {table, width, height} = state;
 
         const shipCoordinates = hoverShipCoordinates(newShip);
 
-        const coordinatesOutOfField = shipCoordinates.find(({ x, y }) => {
+        const coordinatesOutOfField = shipCoordinates.find(({x, y}) => {
             return (x > (width - 1)) || (x < 0) || (y > (height - 1)) || (y < 0);
         })
 
@@ -73,16 +86,16 @@ const AppProvider = ({ children }) => {
 
         let aroundCoordinates = spaceAroundCoordinates(newShip);
 
-        aroundCoordinates = aroundCoordinates.filter(({ x, y }) => {
+        aroundCoordinates = aroundCoordinates.filter(({x, y}) => {
             return (x < width) || (x >= 0) || (y < height) || (y >= 0);
         });
 
         let allCoordinates = shipCoordinates.concat(aroundCoordinates)
 
-        allCoordinates = allCoordinates.filter(({ x, y }) => (x < width) && (x >= 0) && (y < height) && (y >= 0));
+        allCoordinates = allCoordinates.filter(({x, y}) => (x < width) && (x >= 0) && (y < height) && (y >= 0));
 
-        const shipsCollisionsCordinate = allCoordinates.find(({ x, y }) => {
-            const { contains } = table[y][x];
+        const shipsCollisionsCordinate = allCoordinates.find(({x, y}) => {
+            const {contains} = table[y][x];
 
             return (contains === SHIP_CONTAINS) || (contains === DEAD_SHIP_CONTAINS);
         })
@@ -91,15 +104,19 @@ const AppProvider = ({ children }) => {
     }
 
     const addShipOnTable = (newShip) => {
-        setState(addShip(state, newShip))
+        setState(addShip(state, newShip));
     }
 
-    const shootTableTile = (x, y) => {
-        const { table, ships } = state;
-        const { spaceAroundDeadShip, updatedShips } = shootShip(ships, table, x, y);
+    const moveShipOnTable = (movedShip) => {
+        setState(moveShip(state, movedShip));
+    }
+
+    const shootTableTile = (_e, x, y) => {
+        const {table, ships} = state;
+        const {spaceAroundDeadShip, updatedShips} = shootShip(ships, table, x, y);
         const updatedTable = shootTable(table, x, y, spaceAroundDeadShip);
 
-        setState({ ...state, table: updatedTable, ships: updatedShips })
+        setState({...state, table: updatedTable, ships: updatedShips})
     }
 
 
@@ -109,10 +126,11 @@ const AppProvider = ({ children }) => {
             openTile,
             generateField,
             addShipOnTable,
+            moveShipOnTable,
             shootTableTile,
             doNothingFunction,
             noHoverShipCollision
-        }} >
+        }}>
             {children}
         </AppContext.Provider>
     )
@@ -124,4 +142,12 @@ const useGlobalContext = () => {
 
 const doNothingFunction = (value) => value;
 
-export { AppContext, AppProvider, useGlobalContext, doNothingFunction }
+const setEmptyFunctionIfUndefined = (func) => {
+    if (func !== undefined) {
+        return func;
+    } else {
+        return doNothingFunction;
+    }
+};
+
+export {AppContext, AppProvider, useGlobalContext, doNothingFunction, setEmptyFunctionIfUndefined}

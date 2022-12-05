@@ -1,3 +1,5 @@
+import {toBePartiallyChecked} from "@testing-library/jest-dom/dist/matchers"
+
 const EMPTY_CONTAINS = 'empty'
 const MISS_SHOT_CONTAINS = 'miss_shot'
 const SHIP_CONTAINS = 'ship'
@@ -5,6 +7,10 @@ const DEAD_SHIP_CONTAINS = 'dead_ship'
 const HOVERED_CONTAINS = 'hovered_ship'
 const HOVERED_COLLISION_CONTAINS = 'hovered_ship_collision' // probably not necessary
 const OVERLAPSE_CONTAINS = 'overlapse_ship'
+const SPACE_AROUND_CONTAINS = 'space_around_ship'
+const SPACE_AROUND_CONFLICT_CONTAINS = 'space_around_conflict_ship'
+const DRAGGING_SHIP_CONTAINS = 'dragging_ship'
+const DRAG_SHIP_CONTAINS = 'drag_ship'
 
 const CLOSED_TILE_CLASS = 'closed'
 
@@ -32,7 +38,7 @@ const nextShipDirection = (direction) => {
     }
 };
 
-const emptyTile = { opened: false, contains: EMPTY_CONTAINS, shipId: null, collision: false };
+const emptyTile = {opened: false, contains: EMPTY_CONTAINS, shipId: null, collision: false};
 const emptyField = {
     height: 0,
     width: 0,
@@ -42,7 +48,7 @@ const emptyField = {
 };
 
 const makeShipTempalte = (size = 1, maxShips = 1) => {
-    return { size, maxShips, shipsPlaced: 0 }
+    return {size, maxShips, shipsPlaced: 0}
 }
 
 const defaultShipTempaltes = [
@@ -55,12 +61,13 @@ const defaultShipTempaltes = [
 const makeShip = (order, size, direction, positionX, positionY) => {
     return {
         id: `ID_${order}_${size}`,
-        hoverShipCoordinates: hoverShipCoordinates({ size, direction, positionX, positionY }),
+        hoverShipCoordinates: hoverShipCoordinates({size, direction, positionX, positionY}),
         size,
         positionX,
         positionY,
         direction,
-        alive: true
+        alive: true,
+        order: order
     }
 }
 
@@ -81,12 +88,12 @@ const makeDefaultField = () => {
 }
 
 const addShip = (state, newShip) => {
-    const { id, hoverShipCoordinates, size } = newShip
-    const { table, ships, shipTemplates } = state;
+    const {id, hoverShipCoordinates, size} = newShip
+    const {table, ships, shipTemplates} = state;
 
     const updatedTable = tableElementsMap(table, (tile, tableX, tableY) => {
-        if (hoverShipCoordinates.find(({ x, y }) => tableX === x && tableY === y)) {
-            return { ...tile, shipId: id, contains: SHIP_CONTAINS }
+        if (hoverShipCoordinates.find(({x, y}) => tableX === x && tableY === y)) {
+            return {...tile, shipId: id, contains: SHIP_CONTAINS}
         } else {
             return tile
         }
@@ -94,17 +101,51 @@ const addShip = (state, newShip) => {
 
     const updatedShipTempaltes = placeShipFromTemplate(shipTemplates, size);
 
-    return { ...state, table: updatedTable, ships: [...ships, newShip], shipTemplates: updatedShipTempaltes }
+    return {...state, table: updatedTable, ships: [...ships, newShip], shipTemplates: updatedShipTempaltes}
 }
 
 const placeShipFromTemplate = (shipTempaltes, addedShipSize) => {
     return shipTempaltes.map((shipTemplate) => {
-        const { size, shipsPlaced } = shipTemplate;
+        const {size, shipsPlaced} = shipTemplate;
         if (size === addedShipSize) {
-            return { ...shipTemplate, shipsPlaced: (shipsPlaced + 1) }
+            return {...shipTemplate, shipsPlaced: (shipsPlaced + 1)}
         } else {
             return shipTemplate;
         }
+    })
+}
+
+const moveShip = (state, movedShip) => {
+    const {id, hoverShipCoordinates, size} = movedShip
+    const {table, ships} = state;
+
+    const updatedTable = tableElementsMap(table, (tile, tableX, tableY) => {
+        if (hoverShipCoordinates.find(({x, y}) => tableX === x && tableY === y)) {
+            return {...tile, shipId: id, contains: SHIP_CONTAINS}
+        } else {
+            const {shipId} = tile;
+
+            if (shipId === id) {
+                return {...tile, shipId: null, contains: EMPTY_CONTAINS};
+            } else {
+                return tile;
+            }
+        }
+    })
+
+    const updatedShips = updateMovedShipInShips(movedShip, ships);
+
+    return {...state, table: updatedTable, ships: updatedShips}
+}
+
+const updateMovedShipInShips = (movedShip, ships) => {
+    return ships.map((ship) => {
+        if (ship.id === movedShip.id) {
+            return movedShip;
+        } else {
+            return ship;
+        }
+
     })
 }
 
@@ -118,13 +159,13 @@ const tableElementsMap = (table, iterator) => {
 }
 
 const shootTable = (table, x, y, spaceAroundDeadShip) => {
-    const shootingCoordinates = spaceAroundDeadShip.concat({ x, y })
+    const shootingCoordinates = spaceAroundDeadShip.concat({x, y})
 
     return tableElementsMap(table, (tile, tableX, tableY) => {
-        if (shootingCoordinates.find(({ x, y }) => x === tableX && y === tableY )) {
-            const { contains } = tile;
+        if (shootingCoordinates.find(({x, y}) => x === tableX && y === tableY)) {
+            const {contains} = tile;
             const newContains = getAfterShopContains(contains);
-            return { ...tile, contains: newContains, opened: true };
+            return {...tile, contains: newContains, opened: true};
         } else {
             return tile;
         }
@@ -133,30 +174,30 @@ const shootTable = (table, x, y, spaceAroundDeadShip) => {
 
 // Awesome !!! single responsibility for table and ship
 const shootShip = (ships, table, shootX, shootY) => {
-    const { shipId } = table[shootY][shootX];
+    const {shipId} = table[shootY][shootX];
 
     if (shipId === null) {
-        return { spaceAroundDeadShip: [], updatedShips: ships };
+        return {spaceAroundDeadShip: [], updatedShips: ships};
     }
 
-    const ship = ships.find(({ id }) => id === shipId);
-    const { hoverShipCoordinates } = ship;
+    const ship = ships.find(({id}) => id === shipId);
+    const {hoverShipCoordinates} = ship;
 
     const updatedCoordinates = hoverShipCoordinates.map((coordinates) => {
-        const { x, y } = coordinates;
+        const {x, y} = coordinates;
 
         if (x === shootX && y === shootY) {
-            return { ...coordinates, alive: false }
+            return {...coordinates, alive: false}
         } else {
             return coordinates;
         }
     });
 
-    const isDead = updatedCoordinates.every(({ alive }) => !alive);
+    const isDead = updatedCoordinates.every(({alive}) => !alive);
 
     const updatedShips = ships.map((ship) => {
         if (ship.id === shipId) {
-            return { ...ship, hoverShipCoordinates: updatedCoordinates, alive: !isDead };
+            return {...ship, hoverShipCoordinates: updatedCoordinates, alive: !isDead};
         } else {
             return ship;
         }
@@ -164,9 +205,9 @@ const shootShip = (ships, table, shootX, shootY) => {
 
     if (isDead) {
         const spaceAroundDeadShip = spaceAroundCoordinates(ship);
-        return { spaceAroundDeadShip, updatedShips };
+        return {spaceAroundDeadShip, updatedShips};
     } else {
-        return { spaceAroundDeadShip: [], updatedShips };
+        return {spaceAroundDeadShip: [], updatedShips};
     }
 };
 
@@ -175,26 +216,27 @@ const getAfterShopContains = (contains) => {
         return DEAD_SHIP_CONTAINS;
     } else {
         return MISS_SHOT_CONTAINS;
-    };
+    }
+    ;
 }
 
 // Filters
 const openAllTable = (table) => {
     return tableElementsMap(table, (tile, _tableX, _tableY) => {
-        return { ...tile, opened: true }
+        return {...tile, opened: true}
     })
 }
 
 const hoverShipCoordinates = (ship) => {
-    const { positionX, positionY, direction, size } = ship;
+    const {positionX, positionY, direction, size} = ship;
     const directionIterator = getDirectionIterator(direction);
 
-    let shipMask = [{ x: positionX, y: positionY, alive: true }];
+    let shipMask = [{x: positionX, y: positionY, alive: true}];
 
     for (let i = 0; i < size - 1; i++) {
         const lastElement = shipMask[shipMask.length - 1];
         const newElement = directionIterator(lastElement);
-        shipMask.push({ ...newElement, alive: true });
+        shipMask.push({...newElement, alive: true});
     }
 
     return shipMask;
@@ -205,13 +247,15 @@ const spaceAroundCoordinates = (ship) => {
 
     let coordinates = [];
 
-    for (const { x, y } of hoveredShipCoordinates) {
+    for (const {x, y} of hoveredShipCoordinates) {
         coordinates = coordinates.concat(aroundCoordinates(x, y));
     }
 
     coordinates = uniqueArray(coordinates);
 
-    return coordinates.filter((el) => { return !hoveredShipCoordinates.includes(el) });
+    return coordinates.filter((el) => {
+        return !hoveredShipCoordinates.includes(el)
+    });
 }
 
 const uniqueArray = (arr) => {
@@ -225,7 +269,7 @@ const aroundCoordinates = (x, y) => {
 
     for (let i = -1; i <= 1; i++) {
         for (let j = -1; j <= 1; j++) {
-            coordinates.push({ x: (x + i), y: (y + j) });
+            coordinates.push({x: (x + i), y: (y + j)});
         }
     }
 
@@ -234,12 +278,12 @@ const aroundCoordinates = (x, y) => {
 
 const displayHoveredShip = (table, hoveredShipCoordinates) => {
     return tableElementsMap(table, (tile, tableX, tableY) => {
-        if (hoveredShipCoordinates.find(({ x, y }) => x === tableX && y === tableY)) {
-            const { shipId } = tile;
+        if (hoveredShipCoordinates.find(({x, y}) => x === tableX && y === tableY)) {
+            const {shipId} = tile;
             if (shipId !== null) {
-                return { ...tile, contains: OVERLAPSE_CONTAINS };
+                return {...tile, contains: OVERLAPSE_CONTAINS};
             } else {
-                return { ...tile, contains: HOVERED_CONTAINS };
+                return {...tile, contains: HOVERED_CONTAINS};
             }
         } else {
             return tile;
@@ -247,14 +291,32 @@ const displayHoveredShip = (table, hoveredShipCoordinates) => {
     })
 }
 
+const displayDragShip = (table, dragShip) => {
+    const {id, hoverShipCoordinates} = dragShip;
+
+    return tableElementsMap(table, (tile, tableX, tableY) => {
+        if (hoverShipCoordinates.find(({x, y}) => tableX === x && tableY === y)) {
+            return {...tile, shipId: id, contains: DRAG_SHIP_CONTAINS}
+        } else {
+            const {shipId} = tile;
+
+            if (shipId === id) {
+                return {...tile, contains: DRAGGING_SHIP_CONTAINS};
+            } else {
+                return tile;
+            }
+        }
+    });
+}
+
 const displayHoveredShipCollision = (table, hoveredShipCoordinates) => {
     return tableElementsMap(table, (tile, tableX, tableY) => {
-        if (hoveredShipCoordinates.find(({ x, y }) => x === tableX && y === tableY)) {
-            const { shipId } = tile;
+        if (hoveredShipCoordinates.find(({x, y}) => x === tableX && y === tableY)) {
+            const {shipId} = tile;
             if (shipId !== null) {
-                return { ...tile, contains: OVERLAPSE_CONTAINS, collision: true };
+                return {...tile, contains: OVERLAPSE_CONTAINS, collision: true};
             } else {
-                return { ...tile, contains: HOVERED_CONTAINS, collision: true };
+                return {...tile, contains: HOVERED_CONTAINS, collision: true};
             }
         } else {
             return tile;
@@ -265,38 +327,53 @@ const displayHoveredShipCollision = (table, hoveredShipCoordinates) => {
 const getDirectionIterator = (direction) => {
     switch (direction) {
         case DIRECTION_UP:
-            return ({ x, y }) => {
-                return { x, y: (y - 1) };
+            return ({x, y}) => {
+                return {x, y: (y - 1)};
             }
         case DIRECTION_DOWN:
-            return ({ x, y }) => {
-                return { x, y: (y + 1) };
+            return ({x, y}) => {
+                return {x, y: (y + 1)};
             }
         case DIRECTION_RIGHT:
-            return ({ x, y }) => {
-                return { x: (x + 1), y };
+            return ({x, y}) => {
+                return {x: (x + 1), y};
             }
         case DIRECTION_LEFT:
-            return ({ x, y }) => {
-                return { x: (x - 1), y };
+            return ({x, y}) => {
+                return {x: (x - 1), y};
             }
         default:
             console.log(`Get direction Iterator unexpected direction ${direction}`);
             return;
-    };
+    }
+    ;
 }
 
 const tableIsEmpty = (table) => {
     return table.every((row) => {
-        return row.every(({ contains }) => contains === EMPTY_CONTAINS)
+        return row.every(({contains}) => contains === EMPTY_CONTAINS)
     });
+};
+
+const getTileShipId = (table, tableX, tableY) => {
+    if (tableX && tableY) {
+        return table[tableY][tableX].shipId;
+    } else {
+        return null;
+    }
+};
+
+const findShipById = (shipId, ships) => {
+    return ships.find(({id}) => id === shipId);
 };
 
 export {
     addShip,
+    moveShip,
     makeShip,
     hoverShipCoordinates,
     displayHoveredShip,
+    displayDragShip,
     displayHoveredShipCollision,
     spaceAroundCoordinates,
     makeDefaultField,
@@ -305,6 +382,8 @@ export {
     shootTable,
     shootShip,
     tableIsEmpty,
+    getTileShipId,
+    findShipById,
     nextShipDirection,
 
     DEFAULT_WIDTH,

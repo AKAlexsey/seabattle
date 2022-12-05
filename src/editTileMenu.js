@@ -1,4 +1,4 @@
-import { DIRECTION_DOWN, nextShipDirection } from './fieldManipulationContext.js'
+import {DIRECTION_DOWN, nextShipDirection} from './fieldManipulationContext.js'
 
 const CLOSED = 'tile_menu_closed'
 const OPENED = 'tile_menu_opened'
@@ -13,16 +13,18 @@ export {
 }
 
 
-const makeMenuState = ({ menuState = CLOSED, positionX = 0, positionY = 0 }) => {
+const makeMenuState = ({menuState = CLOSED, positionX = 0, positionY = 0}) => {
     return {
-        menuState: HOVER_SHIP,
+        menuState: CLOSED,
         positionX: 0,
         positionY: 0,
         size: 1,
         order: 1,
         direction: 'down',
-        x: null, 
-        y: null
+        x: null,
+        y: null,
+        dragingShip: false,
+        dragShipId: null
     };
 }
 
@@ -31,35 +33,43 @@ const makeDefaultMenuState = () => {
 }
 
 const changeTileMenuPosition = (state, positionX, positionY) => {
-    return { ...state, positionX, positionY };
+    return {...state, positionX, positionY};
 }
 
 const openTileMenu = (state) => {
-    return { ...state, menuState: OPENED };
+    return {...state, menuState: OPENED};
 }
 
 const closeTileMenu = (state) => {
-    return { ...state, menuState: CLOSED };
+    return {...state, menuState: CLOSED};
 }
 
 const interactWithTileMenu = (state) => {
-    return { ...state, menuState: INTERACTING };
+    return {...state, menuState: INTERACTING};
 }
 
 const hoverShipHideTileMenu = (state) => {
-    return { ...state, menuState: HOVER_SHIP };
+    return {...state, menuState: HOVER_SHIP};
 }
 
 const setHoveredShip = (state, order, size, direction = DIRECTION_DOWN) => {
-    return { ...state, order, size, direction };
+    return {...state, order, size, direction};
 }
 
 const setHoverTileCoordinates = (state, x, y) => {
-    return { ...state, x, y };
+    return {...state, x, y};
 }
 
 const nullifyHoverTileCoordinates = (state) => {
-    return { ...state, x: null, y: null };
+    return {...state, x: null, y: null};
+}
+
+const startShipDraging = (state, dragShipId) => {
+    return {...state, dragShipId, dragingShip: true};
+}
+
+const stopShipDraging = (state) => {
+    return {...state, dragShipId: null, dragingShip: false};
 }
 
 // Probably not necessary
@@ -67,40 +77,42 @@ const nullifyHoverTileCoordinates = (state) => {
 const MENU_STATES = [CLOSED, OPENED, INTERACTING, HOVER_SHIP]
 
 const nextMenuState = (currentState) => {
-    const { menuState } = currentState;
+    const {menuState} = currentState;
     const nextStepIndex = MENU_STATES.findIndex(stateConstant => stateConstant === menuState) + 1
     if (nextStepIndex === MENU_STATES.length) {
-        return { ...currentState, menuState: MENU_STATES[0] };
+        return {...currentState, menuState: MENU_STATES[0]};
     } else {
-        return { ...currentState, menuState: MENU_STATES[nextStepIndex] };
+        return {...currentState, menuState: MENU_STATES[nextStepIndex]};
     }
 }
 
 const previousMenuState = (currentState) => {
-    const { menuState } = currentState;
+    const {menuState} = currentState;
     const previousStepIndex = MENU_STATES.findIndex(stateConstant => stateConstant === menuState) - 1
     if (previousStepIndex === -1) {
         return currentState;
     } else {
-        return { ...currentState, menuState: MENU_STATES[previousStepIndex] };
+        return {...currentState, menuState: MENU_STATES[previousStepIndex]};
     }
 }
 
 const changeHoverShipDirection = (currentState) => {
-    const { menuState, direction } = currentState;
-    console.log({ menuState })
+    const {menuState, direction} = currentState;
+
     if (menuState === HOVER_SHIP) {
         const nextDirection = nextShipDirection(direction);
-        console.log({ nextDirection, direction })
-        return { ...currentState, direction: nextDirection };
+
+        return {...currentState, direction: nextDirection};
     } else {
-        console.log('no change')
         return currentState;
     }
 }
 
-export { makeDefaultMenuState, makeMenuState, 
-    openTileMenu, closeTileMenu, interactWithTileMenu, 
-    changeTileMenuPosition, nextMenuState, previousMenuState, 
-    hoverShipHideTileMenu, setHoveredShip, nullifyHoverTileCoordinates, 
-    setHoverTileCoordinates, changeHoverShipDirection }
+export {
+    makeDefaultMenuState, makeMenuState,
+    openTileMenu, closeTileMenu, interactWithTileMenu,
+    changeTileMenuPosition, nextMenuState, previousMenuState,
+    hoverShipHideTileMenu, setHoveredShip, nullifyHoverTileCoordinates,
+    setHoverTileCoordinates, changeHoverShipDirection,
+    startShipDraging, stopShipDraging
+}
