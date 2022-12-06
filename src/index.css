@@ -358,6 +358,14 @@ hr {
 }
 
 .game-field td.overlapse_ship {
+    background-color: lightcoral;
+}
+
+.game-field td.space_around_ship {
+    background-color: lightblue;
+}
+
+.game-field td.space_around_ship_conflict {
     background-color: pink;
 }
 

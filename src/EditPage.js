@@ -1,9 +1,9 @@
 import './Battlefield.css';
 import Field from './Field';
-import {useState, useEffect, useCallback} from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import MenuElement from './MenuElement';
-import {useGlobalContext} from './context'
-import {Link} from "react-router-dom";
+import { useGlobalContext } from './context'
+import { Link } from "react-router-dom";
 
 import {
     displayHoveredShip, displayHoveredShipCollision,
@@ -28,13 +28,13 @@ const MENU_ELEMENT_MOUSE_DISTANCE = 15;
 // 2. Add ability to draw collision in space around
 
 const getDragShip = (displayMenuState, ships) => {
-    const {dragingShip, dragShipId, x, y} = displayMenuState;
+    const { dragingShip, dragShipId, x, y } = displayMenuState;
 
     if (dragingShip) {
-        const draggedShip = ships.find(({id}) => id === dragShipId);
+        const draggedShip = ships.find(({ id }) => id === dragShipId);
 
         if (draggedShip) {
-            const {order, size, direction} = draggedShip;
+            const { order, size, direction } = draggedShip;
             return makeShip(order, size, direction, x, y);
         } else {
             return null;
@@ -45,16 +45,16 @@ const getDragShip = (displayMenuState, ships) => {
 }
 
 function EditPage() {
-    const {state, generateField, addShipOnTable, moveShipOnTable, noHoverShipCollision} = useGlobalContext()
+    const { state, generateField, addShipOnTable, moveShipOnTable, noHoverShipCollision } = useGlobalContext()
 
-    const {table, shipTemplates, ships} = state;
+    const { table, shipTemplates, ships } = state;
 
     const [displayTable, setDisplayTable] = useState(openAllTable(table));
     const [displayMenuState, setDisplayMenuState] = useState(makeDefaultMenuState());
-    const {menuState, order, size, direction, x, y, dragingShip} = displayMenuState;
+    const { menuState, order, size, direction, x, y, dragingShip } = displayMenuState;
 
     // Menu state API
-    const processTileMouseMove = ({x, y, positionX, positionY}) => {
+    const processTileMouseMove = ({ x, y, positionX, positionY }) => {
         let updatedState = setHoverTileCoordinates(displayMenuState, x, y);
         updatedState = changeTileMenuPosition(updatedState, positionX, positionY);
         setDisplayMenuState(updatedState);
@@ -70,15 +70,15 @@ function EditPage() {
 
     // Display of collision should not be here.
     // Seems that it cause problem with unable to display collision several times on one tile
-    const displayHoveredShipOnTable = (ship, collision) => {
-        const hoveredShipCoordinates = hoverShipCoordinates(ship);
-
+    const displayShipOnTable = (ship, type) => {
         const openedTable = openAllTable(table);
 
-        if (collision) {
-            setDisplayTable(displayHoveredShipCollision(openedTable, hoveredShipCoordinates));
+        if (type === 'hover') {
+            setDisplayTable(displayHoveredShip(openedTable, ship));
+        } else if (type === 'drag') {
+            setDisplayTable(displayDragShip(openedTable, ship));
         } else {
-            setDisplayTable(displayHoveredShip(openedTable, hoveredShipCoordinates));
+            console.log(`Unexpected display type ${type}`)
         }
     }
 
@@ -92,15 +92,15 @@ function EditPage() {
         if (menuState === OPENED || menuState === CLOSED) {
             const positionX = e.pageX + MENU_ELEMENT_MOUSE_DISTANCE;
             const positionY = e.pageY + MENU_ELEMENT_MOUSE_DISTANCE;
-            processTileMouseMove({x, y, positionX, positionY});
+            processTileMouseMove({ x, y, positionX, positionY });
         } else {
-            processTileMouseMove({x, y, positionX: null, positionY: null});
+            processTileMouseMove({ x, y, positionX: null, positionY: null });
         }
     }
 
     const clickTileCallback = (_e, tileX, tileY) => {
-        const {menuState, order, size, direction, x, y} = displayMenuState;
-        const {table} = state;
+        const { menuState, order, size, direction, x, y } = displayMenuState;
+        const { table } = state;
         const tileShipId = getTileShipId(table, tileX, tileY);
 
 
@@ -111,19 +111,21 @@ function EditPage() {
                 addShipOnTable(newShip);
                 setDisplayMenuState(closeTileMenu(displayMenuState));
             } else {
-                displayHoveredShipOnTable(newShip, true);
+                displayShipOnTable(newShip, 'hover');
             }
         } else if (tileShipId) {
             setDisplayMenuState(startShipDraging(displayMenuState, tileShipId))
         } else {
-            const {ships} = state;
+            const { ships } = state;
             const dragShip = getDragShip(displayMenuState, ships);
 
             if (dragShip) {
                 if (noHoverShipCollision(dragShip)) {
                     moveShipOnTable(dragShip);
+                    setDisplayMenuState(stopShipDraging(displayMenuState));
+                } else {
+                    displayShipOnTable(dragShip, 'drag');
                 }
-                setDisplayMenuState(stopShipDraging(displayMenuState));
             } else {
                 setDisplayMenuState(nextMenuState(displayMenuState));
             }
@@ -160,11 +162,11 @@ function EditPage() {
         // table must not be in this callback variables
         // To avoid infinity loop
         if (menuState === HOVER_SHIP) {
-            const {order, size, direction, x, y} = displayMenuState;
+            const { order, size, direction, x, y } = displayMenuState;
             const newShip = makeShip(order, size, direction, x, y);
-            displayHoveredShipOnTable(newShip, false);
+            displayShipOnTable(newShip, 'hover');
         } else if (dragShip) {
-            displayDraggedShipOnTable(dragShip);
+            displayShipOnTable(dragShip, 'drag');
         } else {
             setDisplayTable(openAllTable(table));
         }
@@ -185,15 +187,15 @@ function EditPage() {
         <div className="App">
 
             <header className='edit_header'>
-        <span>
-          EditPage
-        </span>
+                <span>
+                    EditPage
+                </span>
 
                 <span>
-          <button className='btn remove-btn' onClick={() => {
-              generateField()
-          }}>Generate Field</button>
-        </span>
+                    <button className='btn remove-btn' onClick={() => {
+                        generateField()
+                    }}>Generate Field</button>
+                </span>
 
             </header>
 
@@ -216,7 +218,7 @@ function EditPage() {
                     <article>
                         <ul className='menu_list'>
                             {
-                                shipTemplates.map(({size, maxShips, shipsPlaced}) => {
+                                shipTemplates.map(({ size, maxShips, shipsPlaced }) => {
                                     const menuText = `Ship ${size}. ${shipsPlaced} / ${maxShips}`;
                                     const allshipsPlaced = maxShips <= shipsPlaced;
                                     return (

@@ -8,7 +8,7 @@ const HOVERED_CONTAINS = 'hovered_ship'
 const HOVERED_COLLISION_CONTAINS = 'hovered_ship_collision' // probably not necessary
 const OVERLAPSE_CONTAINS = 'overlapse_ship'
 const SPACE_AROUND_CONTAINS = 'space_around_ship'
-const SPACE_AROUND_CONFLICT_CONTAINS = 'space_around_conflict_ship'
+const SPACE_AROUND_CONFLICT_CONTAINS = 'space_around_ship_conflict'
 const DRAGGING_SHIP_CONTAINS = 'dragging_ship'
 const DRAG_SHIP_CONTAINS = 'drag_ship'
 
@@ -276,14 +276,25 @@ const aroundCoordinates = (x, y) => {
     return coordinates;
 }
 
-const displayHoveredShip = (table, hoveredShipCoordinates) => {
+const displayHoveredShip = (table, ship) => {
+    const { hoverShipCoordinates } = ship;
+
+    const spaceAround = spaceAroundCoordinates(ship);
+
     return tableElementsMap(table, (tile, tableX, tableY) => {
-        if (hoveredShipCoordinates.find(({x, y}) => x === tableX && y === tableY)) {
+        if (hoverShipCoordinates.find(({x, y}) => x === tableX && y === tableY)) {
             const {shipId} = tile;
             if (shipId !== null) {
                 return {...tile, contains: OVERLAPSE_CONTAINS};
             } else {
                 return {...tile, contains: HOVERED_CONTAINS};
+            }
+        } else if (spaceAround.find(({x, y}) => x === tableX && y === tableY)) {
+            const {shipId} = tile;
+            if (shipId !== null) {
+                return {...tile, contains: SPACE_AROUND_CONFLICT_CONTAINS};
+            } else {
+                return {...tile, contains: SPACE_AROUND_CONTAINS};
             }
         } else {
             return tile;
@@ -291,12 +302,21 @@ const displayHoveredShip = (table, hoveredShipCoordinates) => {
     })
 }
 
-const displayDragShip = (table, dragShip) => {
-    const {id, hoverShipCoordinates} = dragShip;
+const displayDragShip = (table, ship) => {
+    const {id, hoverShipCoordinates} = ship;
+
+    const spaceAround = spaceAroundCoordinates(ship);
 
     return tableElementsMap(table, (tile, tableX, tableY) => {
         if (hoverShipCoordinates.find(({x, y}) => tableX === x && tableY === y)) {
             return {...tile, shipId: id, contains: DRAG_SHIP_CONTAINS}
+        } else if (spaceAround.find(({x, y}) => x === tableX && y === tableY)) {
+            const {shipId} = tile;
+            if (shipId !== null) {
+                return {...tile, contains: SPACE_AROUND_CONFLICT_CONTAINS};
+            } else {
+                return {...tile, contains: SPACE_AROUND_CONTAINS};
+            }
         } else {
             const {shipId} = tile;
 
